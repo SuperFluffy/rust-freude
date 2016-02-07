@@ -1,3 +1,4 @@
+<<<<<<< 8ac15ad1af744f3e79abb319a75db18313410fdd
 # Compiled files
 *.o
 *.so
@@ -12,4 +13,7 @@
 
 # Remove Cargo.lock from gitignore if creating an executable, leave it for libraries
 # More information here http://doc.crates.io/guide.html#cargotoml-vs-cargolock
+=======
+target
+>>>>>>> Initial commit
 Cargo.lock

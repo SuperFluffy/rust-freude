@@ -1,0 +1,18 @@
+[package]
+name = "freude"
+version = "0.1.0"
+authors = ["Superfluffy"]
+license = "MIT/Apache-2.0"
+
+repository = "https://github.com/SuperFluffy/rust-freude"
+
+description = "Something that is supposed to develop into a full fledges ODE library."
+
+[lib]
+name = "freude"
+
+[build-dependencies]
+rustc_version = "0.1.6"
+
+[dependencies]
+float-cmp = "0.2.2"
