@@ -1,5 +1,8 @@
 use std::ops::{Add,Mul};
 
+use ndarray::{Dimension, Scalar};
+use ndarray::OwnedArray;
+
 pub trait ODE {
     type State;
 
@@ -65,6 +68,71 @@ impl<T> RungeKutta4<T>
             self.system.differentiate_into(&(initial_state + &self.k2 * self.dt_2), &mut self.k3);
             self.system.differentiate_into(&(initial_state + &self.k3 * self.dt), &mut self.k4);
             self.temp = initial_state + &(self.dt_6 * &self.k1) + &(self.dt_3 * &self.k2) + &(self.dt_3 * &self.k3) + &(self.dt_6 * &self.k4);
+        }
+
+        self.system.update_state(&self.temp);
+    }
+}
+
+impl<D> RungeKutta4<OwnedArray<f64,D>>
+    where D: Dimension
+{
+    pub fn new(system: Box<ODE<State=OwnedArray<f64,D>>>, dt: f64) -> Self {
+
+        let temp = system.get_state().clone();
+        let k1 = system.get_state().clone();
+        let k2 = system.get_state().clone();
+        let k3 = system.get_state().clone();
+        let k4 = system.get_state().clone();
+
+        let dt_2 = dt / 2.;
+        let dt_3 = dt / 3.;
+        let dt_6 = dt / 6.;
+
+        RungeKutta4 {
+            system: system,
+            temp: temp,
+            k1: k1,
+            k2: k2,
+            k3: k3,
+            k4: k4,
+
+            dt: dt,
+            dt_2: dt_2,
+            dt_3: dt_3,
+            dt_6: dt_6,
+        }
+    }
+
+    pub fn do_step (&mut self) {
+        {
+            let initial_state = self.system.get_state();
+
+            self.system.differentiate_into(initial_state, &mut self.k1);
+
+            self.temp.assign(&self.k1);
+            self.temp *= self.dt_2;
+            self.system.differentiate_into(&(&*initial_state + &self.temp), &mut self.k2);
+
+            self.temp.assign(&self.k2);
+            self.temp *= self.dt_2;
+            self.system.differentiate_into(&(&*initial_state + &self.temp), &mut self.k3);
+
+            self.temp.assign(&self.k3);
+            self.temp *= self.dt;
+            self.system.differentiate_into(&(&*initial_state + &self.temp), &mut self.k4);
+
+            self.temp.assign(initial_state);
+
+            self.k1 *= self.dt_6;
+            self.k2 *= self.dt_3;
+            self.k3 *= self.dt_3;
+            self.k4 *= self.dt_6;
+
+            self.temp += &self.k1;
+            self.temp += &self.k2;
+            self.temp += &self.k3;
+            self.temp += &self.k4;
         }
 
         self.system.update_state(&self.temp);

@@ -1,4 +1,7 @@
+#![feature(augmented_assignments)]
+
 extern crate float_cmp;
+extern crate ndarray;
 
 mod traits;
 
