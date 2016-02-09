@@ -112,15 +112,18 @@ impl<D> RungeKutta4<OwnedArray<f64,D>>
 
             self.temp.assign(&self.k1);
             self.temp *= self.dt_2;
-            self.system.differentiate_into(&(&*initial_state + &self.temp), &mut self.k2);
+            self.temp += initial_state;
+            self.system.differentiate_into(&self.temp, &mut self.k2);
 
             self.temp.assign(&self.k2);
             self.temp *= self.dt_2;
-            self.system.differentiate_into(&(&*initial_state + &self.temp), &mut self.k3);
+            self.temp += initial_state;
+            self.system.differentiate_into(&self.temp, &mut self.k3);
 
             self.temp.assign(&self.k3);
             self.temp *= self.dt;
-            self.system.differentiate_into(&(&*initial_state + &self.temp), &mut self.k4);
+            self.temp += initial_state;
+            self.system.differentiate_into(&self.temp, &mut self.k4);
 
             self.temp.assign(initial_state);
 
