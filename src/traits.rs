@@ -13,6 +13,10 @@ pub trait ODE {
     fn update_state(&mut self, &Self::State);
 }
 
+pub trait Stepper {
+    fn do_step(&mut self);
+}
+
 pub struct RungeKutta4<T> {
     pub system: Box<ODE<State=T>>,
     temp: T,
@@ -29,12 +33,9 @@ pub struct RungeKutta4<T> {
 
 impl<T> RungeKutta4<T>
     where
-    for<'a, 'b> T: 'a + Clone + Add<&'b T, Output=T>,
-    for<'a, 'b> &'a T: Add<T, Output=T> + Add<&'b T, Output=T> + Mul<f64, Output=T>,
-    for<'b> f64: Mul<&'b T, Output=T>,
+        T: Clone,
 {
     pub fn new(system: Box<ODE<State=T>>, dt: f64) -> Self {
-
         let temp = system.get_state().clone();
         let k1 = system.get_state().clone();
         let k2 = system.get_state().clone();
@@ -60,19 +61,26 @@ impl<T> RungeKutta4<T>
         }
     }
 
-    pub fn do_step (&mut self) {
-        {
-            let initial_state = self.system.get_state();
-            self.system.differentiate_into(initial_state, &mut self.k1);
-            self.system.differentiate_into(&(initial_state + &self.k1 * self.dt_2), &mut self.k2);
-            self.system.differentiate_into(&(initial_state + &self.k2 * self.dt_2), &mut self.k3);
-            self.system.differentiate_into(&(initial_state + &self.k3 * self.dt), &mut self.k4);
-            self.temp = initial_state + &(self.dt_6 * &self.k1) + &(self.dt_3 * &self.k2) + &(self.dt_3 * &self.k3) + &(self.dt_6 * &self.k4);
-        }
-
-        self.system.update_state(&self.temp);
-    }
 }
+
+// impl<T> Stepper for RungeKutta4<T>
+//     where
+//         for<'a, 'b> T: 'a + Clone + Add<&'b T, Output=T>,
+//         for<'a, 'b> &'a T: Add<T, Output=T> + Add<&'b T, Output=T> + Mul<f64, Output=T>,
+//         for<'b> f64: Mul<&'b T, Output=T>,
+// {
+//     fn do_step (&mut self) {
+//         {
+//             let initial_state = self.system.get_state();
+//             self.system.differentiate_into(initial_state, &mut self.k1);
+//             self.system.differentiate_into(&(initial_state + &self.k1 * self.dt_2), &mut self.k2);
+//             self.system.differentiate_into(&(initial_state + &self.k2 * self.dt_2), &mut self.k3);
+//             self.system.differentiate_into(&(initial_state + &self.k3 * self.dt), &mut self.k4);
+//             self.temp = initial_state + &(self.dt_6 * &self.k1) + &(self.dt_3 * &self.k2) + &(self.dt_3 * &self.k3) + &(self.dt_6 * &self.k4);
+//         }
+//         self.system.update_state(&self.temp);
+//     }
+// }
 
 impl<D> RungeKutta4<OwnedArray<f64,D>>
     where D: Dimension
@@ -103,8 +111,12 @@ impl<D> RungeKutta4<OwnedArray<f64,D>>
             dt_6: dt_6,
         }
     }
+}
 
-    pub fn do_step (&mut self) {
+impl<D> Stepper for RungeKutta4<OwnedArray<f64,D>>
+    where D: Dimension
+{
+    fn do_step (&mut self) {
         {
             let initial_state = self.system.get_state();
 
