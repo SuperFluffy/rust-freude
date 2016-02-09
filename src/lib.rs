@@ -1,6 +1,7 @@
 #![feature(augmented_assignments)]
 
 extern crate float_cmp;
+#[macro_use(izip)] extern crate itertools;
 extern crate ndarray;
 
 use traits::ODE;

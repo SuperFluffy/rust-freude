@@ -73,6 +73,51 @@ impl<T> RungeKutta4<T>
 //     }
 // }
 
+impl Stepper for RungeKutta4<f64>
+{
+    fn do_step (&mut self) {
+        {
+            let initial_state = self.system.get_state();
+            self.system.differentiate_into(initial_state, &mut self.k1);
+            self.system.differentiate_into(&(initial_state + &self.k1 * self.dt_2), &mut self.k2);
+            self.system.differentiate_into(&(initial_state + &self.k2 * self.dt_2), &mut self.k3);
+            self.system.differentiate_into(&(initial_state + &self.k3 * self.dt), &mut self.k4);
+            self.temp = initial_state + &(self.dt_6 * &self.k1) + &(self.dt_3 * &self.k2) + &(self.dt_3 * &self.k3) + &(self.dt_6 * &self.k4);
+        }
+        self.system.update_state(&self.temp);
+    }
+}
+
+impl Stepper for RungeKutta4<Vec<f64>>
+{
+    fn do_step (&mut self) {
+        {
+            let initial_state = self.system.get_state();
+            self.system.differentiate_into(initial_state, &mut self.k1);
+
+            for (t,i,k) in izip!(self.temp.iter_mut(), initial_state.iter(), self.k1.iter()) {
+                *t = *i + self.dt_2 * k;
+            }
+            self.system.differentiate_into(&self.temp, &mut self.k2);
+
+            for (t,i,k) in izip!(self.temp.iter_mut(), initial_state.iter(), self.k2.iter()) {
+                *t = *i + self.dt_2 * k;
+            }
+            self.system.differentiate_into(&self.temp, &mut self.k3);
+
+            for (t,i,k) in izip!(self.temp.iter_mut(), initial_state.iter(), self.k3.iter()) {
+                *t = *i + self.dt * k;
+            }
+            self.system.differentiate_into(&self.temp, &mut self.k4);
+
+            for (t,i,k1,k2,k3,k4) in izip!(self.temp.iter_mut(), initial_state.iter(), self.k1.iter(), self.k2.iter(), self.k3.iter(), self.k4.iter()) {
+                *t = i + self.dt_6 * k1 + self.dt_3 * k2 + self.dt_3 * k3 + self.dt_6 * k4;
+            }
+        }
+        self.system.update_state(&self.temp);
+    }
+}
+
 impl<D> RungeKutta4<OwnedArray<f64,D>>
     where D: Dimension
 {
