@@ -23,11 +23,61 @@ pub struct RungeKutta4<T> {
     dt_6: f64,
 }
 
-impl<T> RungeKutta4<T>
+// impl<T> RungeKutta4<T>
+//     where
+//         T: Clone,
+// {
+//     pub fn new(system: Box<ODE<State=T>>, dt: f64) -> Self {
+//         let temp = system.get_state().clone();
+//         let k1 = system.get_state().clone();
+//         let k2 = system.get_state().clone();
+//         let k3 = system.get_state().clone();
+//         let k4 = system.get_state().clone();
+
+//         let dt_2 = dt / 2.;
+//         let dt_3 = dt / 3.;
+//         let dt_6 = dt / 6.;
+
+//         RungeKutta4 {
+//             system: system,
+//             temp: temp,
+//             k1: k1,
+//             k2: k2,
+//             k3: k3,
+//             k4: k4,
+
+//             dt: dt,
+//             dt_2: dt_2,
+//             dt_3: dt_3,
+//             dt_6: dt_6,
+//         }
+//     }
+// }
+
+// impl<T> Stepper for RungeKutta4<T>
+//     where
+//         for<'a, 'b> T: 'a + Clone + Add<&'b T, Output=T>,
+//         for<'a, 'b> &'a T: Add<T, Output=T> + Add<&'b T, Output=T> + Mul<f64, Output=T>,
+//         for<'b> f64: Mul<&'b T, Output=T>,
+// {
+//     fn do_step (&mut self) {
+//         {
+//             let initial_state = self.system.get_state();
+//             self.system.differentiate_into(initial_state, &mut self.k1);
+//             self.system.differentiate_into(&(initial_state + &self.k1 * self.dt_2), &mut self.k2);
+//             self.system.differentiate_into(&(initial_state + &self.k2 * self.dt_2), &mut self.k3);
+//             self.system.differentiate_into(&(initial_state + &self.k3 * self.dt), &mut self.k4);
+//             self.temp = initial_state + &(self.dt_6 * &self.k1) + &(self.dt_3 * &self.k2) + &(self.dt_3 * &self.k3) + &(self.dt_6 * &self.k4);
+//         }
+//         self.system.update_state(&self.temp);
+//     }
+// }
+//
+impl RungeKutta4<f64>
     where
-        T: Clone,
+        f64: Clone,
 {
-    pub fn new(system: Box<ODE<State=T>>, dt: f64) -> Self {
+    pub fn new(system: Box<ODE<State=f64>>, dt: f64) -> Self {
         let temp = system.get_state().clone();
         let k1 = system.get_state().clone();
         let k2 = system.get_state().clone();
@@ -53,25 +103,6 @@ impl<T> RungeKutta4<T>
         }
     }
 }
-
-// impl<T> Stepper for RungeKutta4<T>
-//     where
-//         for<'a, 'b> T: 'a + Clone + Add<&'b T, Output=T>,
-//         for<'a, 'b> &'a T: Add<T, Output=T> + Add<&'b T, Output=T> + Mul<f64, Output=T>,
-//         for<'b> f64: Mul<&'b T, Output=T>,
-// {
-//     fn do_step (&mut self) {
-//         {
-//             let initial_state = self.system.get_state();
-//             self.system.differentiate_into(initial_state, &mut self.k1);
-//             self.system.differentiate_into(&(initial_state + &self.k1 * self.dt_2), &mut self.k2);
-//             self.system.differentiate_into(&(initial_state + &self.k2 * self.dt_2), &mut self.k3);
-//             self.system.differentiate_into(&(initial_state + &self.k3 * self.dt), &mut self.k4);
-//             self.temp = initial_state + &(self.dt_6 * &self.k1) + &(self.dt_3 * &self.k2) + &(self.dt_3 * &self.k3) + &(self.dt_6 * &self.k4);
-//         }
-//         self.system.update_state(&self.temp);
-//     }
-// }
 
 impl Stepper for RungeKutta4<f64>
 {

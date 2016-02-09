@@ -5,7 +5,7 @@ extern crate float_cmp;
 extern crate ndarray;
 
 use traits::ODE;
-use steppers::RungeKutta4;
+use steppers::{RungeKutta4,Stepper};
 
 mod steppers;
 mod traits;
@@ -42,8 +42,11 @@ fn simple_rk4() {
 
     let sys = SimpleODE { a: 1., x: 1. };
 
-    let mut rk4 = RungeKutta4::new(Box::new(sys), 0.1);
+    // FIXME
+    // Why do we need ::<f64> here?
+    // Without > multiple applicable items in scope
+    let mut rk4 = RungeKutta4::<f64>::new(Box::new(sys), 0.1);
     rk4.do_step();
 
-    assert!(result.approx_eq_ulps(rk4.system.get_state(), 2));
+    assert!(result.approx_eq_ulps(rk4.system.get_state(), 2i64));
 }
