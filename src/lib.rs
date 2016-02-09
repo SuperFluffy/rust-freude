@@ -3,10 +3,11 @@
 extern crate float_cmp;
 extern crate ndarray;
 
-mod traits;
-
 use traits::ODE;
-use traits::RungeKutta4;
+use steppers::RungeKutta4;
+
+mod steppers;
+mod traits;
 
 #[test]
 fn simple_rk4() {
