@@ -45,8 +45,8 @@ fn simple_rk4() {
     // FIXME
     // Why do we need ::<f64> here?
     // Without > multiple applicable items in scope
-    let mut rk4 = RungeKutta4::<f64>::new(Box::new(sys), 0.1);
-    rk4.do_step();
+    let mut rk4 = RungeKutta4::<f64>::new(Box::new(sys));
+    rk4.do_step(0.1);
 
     assert!(result.approx_eq_ulps(rk4.system.get_state(), 2i64));
 }
