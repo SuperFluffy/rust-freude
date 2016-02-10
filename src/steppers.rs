@@ -6,11 +6,15 @@ use ndarray::OwnedArray;
 use traits::ODE;
 
 pub trait Stepper {
+    type State;
+
+    fn give_system(&mut self) -> &mut Box<ODE<State=Self::State>>;
     fn do_step(&mut self, dt: f64);
 }
 
 pub struct RungeKutta4<T> {
     pub system: Box<ODE<State=T>>,
+
     temp: T,
     k1: T,
     k2: T,
@@ -106,6 +110,12 @@ impl RungeKutta4<Vec<f64>>
 
 impl Stepper for RungeKutta4<f64>
 {
+    type State = f64;
+
+    fn give_system<'a>(&'a mut self) -> &'a mut Box<ODE<State=Self::State>> {
+        &mut self.system
+    }
+
     fn do_step (&mut self, dt: f64) {
         let dt_2 = dt / 2.;
         let dt_3 = dt / 3.;
@@ -124,6 +134,12 @@ impl Stepper for RungeKutta4<f64>
 
 impl Stepper for RungeKutta4<Vec<f64>>
 {
+    type State = Vec<f64>;
+
+    fn give_system<'a>(&'a mut self) -> &'a mut Box<ODE<State=Self::State>> {
+        &mut self.system
+    }
+
     fn do_step (&mut self, dt: f64) {
         let dt_2 = dt / 2.;
         let dt_3 = dt / 3.;
@@ -181,6 +197,12 @@ impl<D> RungeKutta4<OwnedArray<f64,D>>
 impl<D> Stepper for RungeKutta4<OwnedArray<f64,D>>
     where D: Dimension
 {
+    type State = OwnedArray<f64,D>;
+
+    fn give_system<'a>(&'a mut self) -> &'a mut Box<ODE<State=Self::State>> {
+        &mut self.system
+    }
+
     fn do_step (&mut self, dt: f64) {
         let dt_2 = dt / 2.;
         let dt_3 = dt / 3.;
