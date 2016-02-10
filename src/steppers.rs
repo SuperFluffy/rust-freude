@@ -104,6 +104,35 @@ impl RungeKutta4<f64>
     }
 }
 
+impl RungeKutta4<Vec<f64>>
+{
+    pub fn new(system: Box<ODE<State=Vec<f64>>>, dt: f64) -> Self {
+        let temp = system.get_state().clone();
+        let k1 = system.get_state().clone();
+        let k2 = system.get_state().clone();
+        let k3 = system.get_state().clone();
+        let k4 = system.get_state().clone();
+
+        let dt_2 = dt / 2.;
+        let dt_3 = dt / 3.;
+        let dt_6 = dt / 6.;
+
+        RungeKutta4 {
+            system: system,
+            temp: temp,
+            k1: k1,
+            k2: k2,
+            k3: k3,
+            k4: k4,
+
+            dt: dt,
+            dt_2: dt_2,
+            dt_3: dt_3,
+            dt_6: dt_6,
+        }
+    }
+}
+
 impl Stepper for RungeKutta4<f64>
 {
     fn do_step (&mut self) {
@@ -179,6 +208,7 @@ impl<D> RungeKutta4<OwnedArray<f64,D>>
         }
     }
 }
+
 
 impl<D> Stepper for RungeKutta4<OwnedArray<f64,D>>
     where D: Dimension
