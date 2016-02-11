@@ -6,6 +6,11 @@ pub struct Integrator<T> {
 }
 
 impl<T> Integrator<T> {
+    pub fn new(stepper: Box<Stepper<State=T>>) -> Self {
+        Integrator {
+            stepper: stepper,
+        }
+    }
     // If we define the argument obs as `&mut Observer<ODE<State=T> + 'a>`, where the lifetime 'a
     // is coupled to &' mut self, how we can make sure that the calls to do_step() and observe()
     // will stop borrowing after they are over.
