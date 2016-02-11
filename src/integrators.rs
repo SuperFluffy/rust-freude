@@ -24,7 +24,8 @@ impl<T> Integrator<T> {
         let mut tacc = t0;
         let mut count = 0;
 
-        while tacc <= tf {
+        // tacc+dt ensures that we don't exceed tf, and that tf - dt < t' <= tf
+        while (tacc+dt) <= tf {
             self.stepper.do_step(dt);
             tacc += dt;
             count += 1;
