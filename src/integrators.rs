@@ -43,4 +43,8 @@ impl<T> Integrator<T> {
 
         obs.observe(self.stepper.get_system_mut());
     }
+
+    pub fn get_state(&self) -> &T {
+        self.stepper.get_state()
+    }
 }
