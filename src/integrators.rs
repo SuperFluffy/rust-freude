@@ -1,7 +1,7 @@
 use traits::{Observer,ODE};
 use steppers::Stepper;
 
-struct Integrator<T> {
+pub struct Integrator<T> {
     stepper: Box<Stepper<State=T>>,
 }
 
