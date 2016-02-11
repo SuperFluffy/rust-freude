@@ -8,7 +8,7 @@ pub trait ODE {
     fn update_state(&mut self, &Self::State);
 }
 
-pub trait Observer<T> {
+pub trait Observer<T: ?Sized> {
     // The observer should be allowed to affect the observable,
     // e.g. in the case of reading the Lyapunov exponents, or resetting
     // a phase to the range [0,2π)

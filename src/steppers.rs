@@ -8,7 +8,9 @@ use traits::ODE;
 pub trait Stepper {
     type State;
 
-    fn give_system(&mut self) -> &mut Box<ODE<State=Self::State>>;
+    // We have to return a mutable box for now; see the comments for the integrator<T> impl.
+    // fn get_system_mut(&mut self) -> &mut ODE<State=Self::State>;
+    fn get_system_mut(&mut self) -> &mut Box<ODE<State=Self::State>>;
     fn do_step(&mut self, dt: f64);
 }
 
@@ -112,7 +114,9 @@ impl Stepper for RungeKutta4<f64>
 {
     type State = f64;
 
-    fn give_system<'a>(&'a mut self) -> &'a mut Box<ODE<State=Self::State>> {
+    // fn get_system_mut<'a>(&'a mut self) -> &'a mut ODE<State=Self::State> {
+    fn get_system_mut(&mut self) -> &mut Box<ODE<State=Self::State>> {
+        // &mut *self.system
         &mut self.system
     }
 
@@ -136,7 +140,9 @@ impl Stepper for RungeKutta4<Vec<f64>>
 {
     type State = Vec<f64>;
 
-    fn give_system<'a>(&'a mut self) -> &'a mut Box<ODE<State=Self::State>> {
+    // fn get_system_mut<'a>(&'a mut self) -> &'a mut ODE<State=Self::State> {
+    fn get_system_mut(&mut self) -> &mut Box<ODE<State=Self::State>> {
+        // &mut *self.system
         &mut self.system
     }
 
@@ -199,7 +205,9 @@ impl<D> Stepper for RungeKutta4<OwnedArray<f64,D>>
 {
     type State = OwnedArray<f64,D>;
 
-    fn give_system<'a>(&'a mut self) -> &'a mut Box<ODE<State=Self::State>> {
+    // fn get_system_mut<'a>(&'a mut self) -> &'a mut ODE<State=Self::State> {
+    fn get_system_mut(&mut self) -> &mut Box<ODE<State=Self::State>> {
+        // &mut *self.system
         &mut self.system
     }
 
