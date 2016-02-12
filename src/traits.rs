@@ -1,11 +1,16 @@
 pub trait ODE {
-    type State;
+    type State: Clone;
 
     fn get_state(&self) -> &Self::State;
 
-    fn differentiate(&self, &Self::State) -> Self::State;
     fn differentiate_into(&self, &Self::State, &mut Self::State);
     fn update_state(&mut self, &Self::State);
+
+    fn differentiate(&self, state: &Self::State) -> Self::State {
+        let mut newstate  = state.clone();
+        self.differentiate_into(state, &mut newstate);
+        newstate
+    }
 }
 
 pub trait Observer<T: ?Sized> {

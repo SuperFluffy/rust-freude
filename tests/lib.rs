@@ -21,10 +21,6 @@ fn stepper_rk4() {
             &self.x
         }
 
-        fn differentiate(&self, x: &f64) -> f64 {
-            self.a + x.sin()
-        }
-
         fn differentiate_into(&self, x: &f64, into: &mut f64) {
             *into = self.a + x.sin();
         }
@@ -59,10 +55,6 @@ fn integrator_rk4() {
         type State = f64;
         fn get_state(&self) -> &f64 {
             &self.x
-        }
-
-        fn differentiate(&self, x: &f64) -> f64 {
-            self.a + x.sin()
         }
 
         fn differentiate_into(&self, x: &f64, into: &mut f64) {
@@ -108,10 +100,6 @@ fn integrator_steps_vs_range() {
         type State = f64;
         fn get_state(&self) -> &f64 {
             &self.x
-        }
-
-        fn differentiate(&self, x: &f64) -> f64 {
-            self.a + x.sin()
         }
 
         fn differentiate_into(&self, x: &f64, into: &mut f64) {

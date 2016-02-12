@@ -20,10 +20,6 @@ fn rk4_freude(bench: &mut test::Bencher) {
             &self.x
         }
 
-        fn differentiate(&self, x: &f64) -> f64 {
-            self.a + x.sin()
-        }
-
         fn differentiate_into(&self, x: &f64, into: &mut f64) {
             *into = self.a + x.sin();
         }
