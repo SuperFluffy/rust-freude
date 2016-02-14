@@ -127,11 +127,11 @@ impl Stepper for RungeKutta4<f64>
         let dt_3 = dt / 3.;
         let dt_6 = dt / 6.;
         {
-            let initial_state = self.system.get_state();
-            self.system.differentiate_into(initial_state, &mut self.k1);
-            self.system.differentiate_into(&(initial_state + &self.k1 * dt_2), &mut self.k2);
-            self.system.differentiate_into(&(initial_state + &self.k2 * dt_2), &mut self.k3);
-            self.system.differentiate_into(&(initial_state + &self.k3 * dt), &mut self.k4);
+            let mut initial_state = self.system.get_state().clone();
+            self.system.differentiate_into(&mut initial_state, &mut self.k1);
+            self.system.differentiate_into(&mut (initial_state + &self.k1 * dt_2), &mut self.k2);
+            self.system.differentiate_into(&mut (initial_state + &self.k2 * dt_2), &mut self.k3);
+            self.system.differentiate_into(&mut (initial_state + &self.k3 * dt), &mut self.k4);
             self.temp = initial_state + &(dt_6 * &self.k1) + &(dt_3 * &self.k2) + &(dt_3 * &self.k3) + &(dt_6 * &self.k4);
         }
         self.system.update_state(&self.temp);
@@ -155,23 +155,23 @@ impl Stepper for RungeKutta4<Vec<f64>>
         let dt_3 = dt / 3.;
         let dt_6 = dt / 6.;
         {
-            let initial_state = self.system.get_state();
-            self.system.differentiate_into(initial_state, &mut self.k1);
+            let mut initial_state = self.system.get_state().clone();
+            self.system.differentiate_into(&mut initial_state, &mut self.k1);
 
             for (t,i,k) in izip!(self.temp.iter_mut(), initial_state.iter(), self.k1.iter()) {
                 *t = *i + dt_2 * k;
             }
-            self.system.differentiate_into(&self.temp, &mut self.k2);
+            self.system.differentiate_into(&mut self.temp, &mut self.k2);
 
             for (t,i,k) in izip!(self.temp.iter_mut(), initial_state.iter(), self.k2.iter()) {
                 *t = *i + dt_2 * k;
             }
-            self.system.differentiate_into(&self.temp, &mut self.k3);
+            self.system.differentiate_into(&mut self.temp, &mut self.k3);
 
             for (t,i,k) in izip!(self.temp.iter_mut(), initial_state.iter(), self.k3.iter()) {
                 *t = *i + dt * k;
             }
-            self.system.differentiate_into(&self.temp, &mut self.k4);
+            self.system.differentiate_into(&mut self.temp, &mut self.k4);
 
             for (t,i,k1,k2,k3,k4) in izip!(self.temp.iter_mut(), initial_state.iter(), self.k1.iter(), self.k2.iter(), self.k3.iter(), self.k4.iter()) {
                 *t = i + dt_6 * k1 + dt_3 * k2 + dt_3 * k3 + dt_6 * k4;
@@ -222,26 +222,26 @@ impl<D> Stepper for RungeKutta4<OwnedArray<f64,D>>
         let dt_3 = dt / 3.;
         let dt_6 = dt / 6.;
         {
-            let initial_state = self.system.get_state();
+            let mut initial_state = self.system.get_state().clone();
 
-            self.system.differentiate_into(initial_state, &mut self.k1);
+            self.system.differentiate_into(&mut initial_state, &mut self.k1);
 
             self.temp.assign(&self.k1);
             self.temp *= dt_2;
-            self.temp += initial_state;
-            self.system.differentiate_into(&self.temp, &mut self.k2);
+            self.temp += &initial_state;
+            self.system.differentiate_into(&mut self.temp, &mut self.k2);
 
             self.temp.assign(&self.k2);
             self.temp *= dt_2;
-            self.temp += initial_state;
-            self.system.differentiate_into(&self.temp, &mut self.k3);
+            self.temp += &initial_state;
+            self.system.differentiate_into(&mut self.temp, &mut self.k3);
 
             self.temp.assign(&self.k3);
             self.temp *= dt;
-            self.temp += initial_state;
-            self.system.differentiate_into(&self.temp, &mut self.k4);
+            self.temp += &initial_state;
+            self.system.differentiate_into(&mut self.temp, &mut self.k4);
 
-            self.temp.assign(initial_state);
+            self.temp.assign(&initial_state);
 
             self.k1 *= dt_6;
             self.k2 *= dt_3;

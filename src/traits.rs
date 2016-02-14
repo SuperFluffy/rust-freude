@@ -3,11 +3,11 @@ pub trait ODE {
 
     fn get_state(&self) -> &Self::State;
 
-    fn differentiate_into(&self, &Self::State, &mut Self::State);
+    fn differentiate_into(&mut self, &Self::State, &mut Self::State);
     fn update_state(&mut self, &Self::State);
 
-    fn differentiate(&self, state: &Self::State) -> Self::State {
-        let mut newstate  = state.clone();
+    fn differentiate(&mut self, state: &Self::State) -> Self::State {
+        let mut newstate = state.clone();
         self.differentiate_into(state, &mut newstate);
         newstate
     }

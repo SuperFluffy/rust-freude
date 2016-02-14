@@ -21,7 +21,7 @@ fn stepper_rk4() {
             &self.x
         }
 
-        fn differentiate_into(&self, x: &f64, into: &mut f64) {
+        fn differentiate_into(&mut self, x: &f64, into: &mut f64) {
             *into = self.a + x.sin();
         }
 
@@ -57,7 +57,7 @@ fn integrator_rk4() {
             &self.x
         }
 
-        fn differentiate_into(&self, x: &f64, into: &mut f64) {
+        fn differentiate_into(&mut self, x: &f64, into: &mut f64) {
             *into = self.a + x.sin();
         }
 
@@ -102,7 +102,7 @@ fn integrator_steps_vs_range() {
             &self.x
         }
 
-        fn differentiate_into(&self, x: &f64, into: &mut f64) {
+        fn differentiate_into(&mut self, x: &f64, into: &mut f64) {
             *into = self.a + x.sin();
         }
 
