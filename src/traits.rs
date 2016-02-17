@@ -2,6 +2,7 @@ pub trait ODE {
     type State: Clone;
 
     fn get_state(&self) -> &Self::State;
+    fn get_state_mut(&mut self) -> &mut Self::State;
 
     fn differentiate_into(&mut self, &Self::State, &mut Self::State);
     fn update_state(&mut self, &Self::State);
