@@ -33,9 +33,9 @@ impl<T> Integrator<T> {
     pub fn integrate_n_times(&mut self, n: u64, dt: f64, obs: &mut Observer<ODE<State = T>>) {
         for _i in 0..n {
             self.stepper.do_step(dt);
-        }
 
-        obs.observe(self.stepper.get_system_mut());
+            obs.observe(self.stepper.get_system_mut());
+        }
     }
 
     pub fn get_state(&self) -> &T {
