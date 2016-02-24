@@ -4,6 +4,7 @@ use ndarray::{Dimension, Scalar};
 use ndarray::OwnedArray;
 
 use traits::ODE;
+use utils::{zip_mut_with_2,zip_mut_with_5};
 
 pub trait Stepper {
     type State;
@@ -228,32 +229,46 @@ impl<D> Stepper for RungeKutta4<OwnedArray<f64, D>>
 
             self.system.differentiate_into(&mut initial_state, &mut self.k1);
 
-            self.temp.assign(&self.k1);
-            self.temp *= dt_2;
-            self.temp += &initial_state;
+            // self.temp.assign(&self.k1);
+            // self.temp *= dt_2;
+            // self.temp += &initial_state;
+            zip_mut_with_2(&mut self.temp, initial_state.view(), self.k1.view(), |t,i,k| {
+                *t = i + dt_2 * k;
+            });
             self.system.differentiate_into(&mut self.temp, &mut self.k2);
 
-            self.temp.assign(&self.k2);
-            self.temp *= dt_2;
-            self.temp += &initial_state;
+            // self.temp.assign(&self.k2);
+            // self.temp *= dt_2;
+            // self.temp += &initial_state;
+            zip_mut_with_2(&mut self.temp, initial_state.view(), self.k2.view(), |t,i,k| {
+                *t = i + dt_2 * k;
+            });
             self.system.differentiate_into(&mut self.temp, &mut self.k3);
 
-            self.temp.assign(&self.k3);
-            self.temp *= dt;
-            self.temp += &initial_state;
+            // self.temp.assign(&self.k3);
+            // self.temp *= dt;
+            // self.temp += &initial_state;
+            zip_mut_with_2(&mut self.temp, initial_state.view(), self.k3.view(), |t,i,k| {
+                *t = i + dt * k;
+            });
             self.system.differentiate_into(&mut self.temp, &mut self.k4);
 
-            self.temp.assign(&initial_state);
+            // self.temp.assign(&initial_state);
 
-            self.k1 *= dt_6;
-            self.k2 *= dt_3;
-            self.k3 *= dt_3;
-            self.k4 *= dt_6;
+            // self.k1 *= dt_6;
+            // self.k2 *= dt_3;
+            // self.k3 *= dt_3;
+            // self.k4 *= dt_6;
 
-            self.temp += &self.k1;
-            self.temp += &self.k2;
-            self.temp += &self.k3;
-            self.temp += &self.k4;
+            // self.temp += &self.k1;
+            // self.temp += &self.k2;
+            // self.temp += &self.k3;
+            // self.temp += &self.k4;
+
+            zip_mut_with_5(&mut self.temp, initial_state.view(), self.k1.view(), self.k2.view(), self.k3.view(), self.k4.view(),
+                |t,i,k1,k2,k3,k4| {
+                    *t = i + dt_6 * k1 + dt_3 * k2 + dt_3 * k3 + dt_6 * k4;
+            });
         }
 
         self.system.update_state(&self.temp);
