@@ -232,23 +232,23 @@ impl<D> Stepper for RungeKutta4<OwnedArray<f64, D>>
 
             zip_mut_with_2(&mut self.temp, initial_state.view(), self.k1.view(), |t,i,k| {
                 *t = i + dt_2 * k;
-            });
+            }).unwrap();
             self.system.differentiate_into(&mut self.temp, &mut self.k2);
 
             zip_mut_with_2(&mut self.temp, initial_state.view(), self.k2.view(), |t,i,k| {
                 *t = i + dt_2 * k;
-            });
+            }).unwrap();
             self.system.differentiate_into(&mut self.temp, &mut self.k3);
 
             zip_mut_with_2(&mut self.temp, initial_state.view(), self.k3.view(), |t,i,k| {
                 *t = i + dt * k;
-            });
+            }).unwrap();
             self.system.differentiate_into(&mut self.temp, &mut self.k4);
 
             zip_mut_with_5(&mut self.temp, initial_state.view(), self.k1.view(), self.k2.view(), self.k3.view(), self.k4.view(),
                 |t,i,k1,k2,k3,k4| {
                     *t = i + dt_6 * k1 + dt_3 * k2 + dt_3 * k3 + dt_6 * k4;
-            });
+            }).unwrap();
         }
 
         self.system.update_state(&self.temp);
