@@ -86,7 +86,7 @@ fn integrator_rk4() {
 
     let mut obs = UselessObserver {};
 
-    integrator.integrate_n_times(10, 0.1, &mut obs); 
+    integrator.integrate_n_steps(10, 0.1, &mut obs); 
 
     assert!(result.approx_eq_ulps(integrator.get_state(), 2i64));
 }
@@ -145,9 +145,9 @@ fn integrator_steps_vs_range() {
     let t0 = 0.0;
     let tf = t0 + dt * (n1 as f64);
 
-    integrator1.integrate_n_times(n1, dt, &mut obs); 
+    integrator1.integrate_n_steps(n1, dt, &mut obs); 
 
-    let (_tf,_n2) = integrator2.integrate_between(t0,tf,dt, &mut obs); 
+    let (_tf,_n2) = integrator2.integrate_time(t0,tf,dt, &mut obs); 
 
     assert!(integrator1.get_state().approx_eq_ulps(integrator2.get_state(), 2i64));
 }
