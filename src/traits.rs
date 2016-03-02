@@ -1,5 +1,9 @@
+use std::any::Any;
+
 pub trait ODE {
     type State: Clone;
+
+    fn as_any(&self) -> &Any;
 
     fn get_state(&self) -> &Self::State;
     fn get_state_mut(&mut self) -> &mut Self::State;

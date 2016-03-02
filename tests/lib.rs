@@ -5,6 +5,7 @@ extern crate float_cmp;
 extern crate freude;
 
 use freude::{Integrator,Observer,ODE,RungeKutta4,Stepper};
+use std::any::Any;
 
 #[test]
 fn stepper_rk4() {
@@ -17,6 +18,11 @@ fn stepper_rk4() {
 
     impl ODE for SimpleODE {
         type State = f64;
+
+        fn as_any(&self) -> &Any {
+            self
+        }
+
         fn get_state(&self) -> &f64 {
             &self.x
         }
@@ -57,6 +63,11 @@ fn integrator_rk4() {
 
     impl ODE for SimpleODE {
         type State = f64;
+
+        fn as_any(&self) -> &Any {
+            self
+        }
+
         fn get_state(&self) -> &f64 {
             &self.x
         }
@@ -106,6 +117,11 @@ fn integrator_steps_vs_range() {
 
     impl ODE for SimpleODE {
         type State = f64;
+
+        fn as_any(&self) -> &Any {
+            self
+        }
+
         fn get_state(&self) -> &f64 {
             &self.x
         }
