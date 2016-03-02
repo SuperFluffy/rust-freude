@@ -142,12 +142,11 @@ fn integrator_steps_vs_range() {
 
     let n1 = 10;
     let dt = 0.1;
-    let t0 = 0.0;
-    let tf = t0 + dt * (n1 as f64);
+    let tf = dt * (n1 as f64);
 
     integrator1.integrate_n_steps(n1, dt, &mut obs); 
 
-    let (_tf,_n2) = integrator2.integrate_time(t0,tf,dt, &mut obs); 
+    let (_tf,_n2) = integrator2.integrate_time(tf,dt, &mut obs); 
 
     assert!(integrator1.get_state().approx_eq_ulps(integrator2.get_state(), 2i64));
 }
