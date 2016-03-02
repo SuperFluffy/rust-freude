@@ -5,10 +5,11 @@ pub trait ODE {
 
     fn as_any(&self) -> &Any;
 
+    fn differentiate_into(&mut self, &Self::State, &mut Self::State);
+
     fn get_state(&self) -> &Self::State;
     fn get_state_mut(&mut self) -> &mut Self::State;
 
-    fn differentiate_into(&mut self, &Self::State, &mut Self::State);
     fn update_state(&mut self, &Self::State);
 
     fn differentiate(&mut self, state: &Self::State) -> Self::State {

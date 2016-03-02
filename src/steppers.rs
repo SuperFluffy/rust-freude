@@ -10,10 +10,10 @@ use utils::{zip_mut_with_2,zip_mut_with_5};
 pub trait Stepper {
     type State;
 
-    fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static);
-    fn get_state(&self) -> &Self::State;
-
     fn do_step(&mut self, dt: f64);
+
+    fn get_state(&self) -> &Self::State;
+    fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static);
 }
 
 pub struct RungeKutta4<T> {
@@ -70,9 +70,7 @@ pub struct RungeKutta4<T> {
 //     }
 // }
 
-impl RungeKutta4<f64>
-    where f64: Clone
-{
+impl RungeKutta4<f64> {
     pub fn new(system: Box<ODE<State = f64>>) -> Self {
         let temp = system.get_state().clone();
         let k1 = system.get_state().clone();
@@ -113,14 +111,6 @@ impl RungeKutta4<Vec<f64>> {
 impl Stepper for RungeKutta4<f64> {
     type State = f64;
 
-    fn get_state(&self) -> &Self::State {
-        self.system.get_state()
-    }
-
-    fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static) {
-        &mut *self.system
-    }
-
     fn do_step(&mut self, dt: f64) {
         let dt_2 = dt / 2.;
         let dt_3 = dt / 3.;
@@ -136,10 +126,6 @@ impl Stepper for RungeKutta4<f64> {
         }
         self.system.update_state(&self.temp);
     }
-}
-
-impl Stepper for RungeKutta4<Vec<f64>> {
-    type State = Vec<f64>;
 
     fn get_state(&self) -> &Self::State {
         self.system.get_state()
@@ -148,6 +134,10 @@ impl Stepper for RungeKutta4<Vec<f64>> {
     fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static) {
         &mut *self.system
     }
+}
+
+impl Stepper for RungeKutta4<Vec<f64>> {
+    type State = Vec<f64>;
 
     fn do_step(&mut self, dt: f64) {
         let dt_2 = dt / 2.;
@@ -183,6 +173,14 @@ impl Stepper for RungeKutta4<Vec<f64>> {
         }
         self.system.update_state(&self.temp);
     }
+
+    fn get_state(&self) -> &Self::State {
+        self.system.get_state()
+    }
+
+    fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static) {
+        &mut *self.system
+    }
 }
 
 impl<D> RungeKutta4<OwnedArray<f64, D>>
@@ -207,19 +205,10 @@ impl<D> RungeKutta4<OwnedArray<f64, D>>
     }
 }
 
-
 impl<D> Stepper for RungeKutta4<OwnedArray<f64, D>>
     where D: Dimension
 {
     type State = OwnedArray<f64,D>;
-
-    fn get_state(&self) -> &Self::State {
-        self.system.get_state()
-    }
-
-    fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static) {
-        &mut *self.system
-    }
 
     fn do_step(&mut self, dt: f64) {
         let dt_2 = dt / 2.;
@@ -252,5 +241,13 @@ impl<D> Stepper for RungeKutta4<OwnedArray<f64, D>>
         }
 
         self.system.update_state(&self.temp);
+    }
+
+    fn get_state(&self) -> &Self::State {
+        self.system.get_state()
+    }
+
+    fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static) {
+        &mut *self.system
     }
 }

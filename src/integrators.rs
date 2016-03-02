@@ -9,6 +9,11 @@ impl<T> Integrator<T> {
     pub fn new(stepper: Box<Stepper<State = T>>) -> Self {
         Integrator { stepper: stepper }
     }
+
+    pub fn get_state(&self) -> &T {
+        self.stepper.get_state()
+    }
+
     pub fn integrate_time(&mut self,
                              t: f64,
                              dt: f64,
@@ -53,10 +58,6 @@ impl<T> Integrator<T> {
 
             obs.observe(self.stepper.get_system_mut());
         }
-    }
-
-    pub fn get_state(&self) -> &T {
-        self.stepper.get_state()
     }
 
     pub fn integrate_n_range<I: IntoIterator<Item=u64>>(&mut self,
