@@ -13,6 +13,8 @@ pub trait Stepper {
     fn do_step(&mut self, dt: f64);
 
     fn get_state(&self) -> &Self::State;
+
+    fn get_system(&self) -> &ODE<State = Self::State>;
     fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static);
 }
 
@@ -131,6 +133,10 @@ impl Stepper for RungeKutta4<f64> {
         self.system.get_state()
     }
 
+    fn get_system(&self) -> &ODE<State = Self::State> {
+        &*self.system
+    }
+
     fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static) {
         &mut *self.system
     }
@@ -176,6 +182,10 @@ impl Stepper for RungeKutta4<Vec<f64>> {
 
     fn get_state(&self) -> &Self::State {
         self.system.get_state()
+    }
+
+    fn get_system(&self) -> &ODE<State = Self::State> {
+        &*self.system
     }
 
     fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static) {
@@ -245,6 +255,10 @@ impl<D> Stepper for RungeKutta4<OwnedArray<f64, D>>
 
     fn get_state(&self) -> &Self::State {
         self.system.get_state()
+    }
+
+    fn get_system(&self) -> &ODE<State = Self::State> {
+        &*self.system
     }
 
     fn get_system_mut(&mut self) -> &mut (ODE<State = Self::State> + 'static) {

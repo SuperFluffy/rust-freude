@@ -14,6 +14,10 @@ impl<T> Integrator<T> {
         self.stepper.get_state()
     }
 
+    pub fn get_system(&self) -> &ODE<State=T> {
+        self.stepper.get_system()
+    }
+
     pub fn integrate_time(&mut self,
                              t: f64,
                              dt: f64,
