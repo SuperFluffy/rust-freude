@@ -1,5 +1,3 @@
-#![feature(augmented_assignments)]
-
 #[macro_use(izip)]
 extern crate itertools;
 extern crate ndarray;
