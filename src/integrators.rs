@@ -22,7 +22,7 @@ impl<T> Integrator<T> {
                              t: f64,
                              dt: f64,
                              obs: &mut Observer<ODE<State = T>>)
-                             -> (f64, u64) {
+                             -> (f64, usize) {
         let mut tacc = 0f64;;
         let mut count = 0;
 
@@ -31,7 +31,7 @@ impl<T> Integrator<T> {
             self.stepper.do_step(dt);
             tacc += dt;
             count += 1;
-            obs.observe(self.stepper.get_system_mut());
+            obs.observe(self.stepper.get_system_mut(),1);
         }
 
         (tacc, count)
@@ -42,7 +42,7 @@ impl<T> Integrator<T> {
                              dt: f64,
                              innerobs: &mut Observer<ODE<State = T>>,
                              outerobs: &mut Observer<ODE<State = T>>)
-                             -> (f64, u64) {
+                             -> (f64, usize) {
         let mut count = 0;
         let mut tacc = 0f64;
 
@@ -51,30 +51,30 @@ impl<T> Integrator<T> {
             let (totacc,tocount) = self.integrate_time(t, dt, innerobs);
             tacc += totacc;
             count += tocount;
-            outerobs.observe(self.stepper.get_system_mut());
+            outerobs.observe(self.stepper.get_system_mut(), count);
         }
         (tacc, count)
     }
 
-    pub fn integrate_n_steps(&mut self, n: u64, dt: f64, obs: &mut Observer<ODE<State = T>>) {
+    pub fn integrate_n_steps(&mut self, n: usize, dt: f64, obs: &mut Observer<ODE<State = T>>) {
         for _i in 0..n {
             self.stepper.do_step(dt);
 
-            obs.observe(self.stepper.get_system_mut());
+            obs.observe(self.stepper.get_system_mut(),1);
         }
     }
 
-    pub fn integrate_n_range<I: IntoIterator<Item=u64>>(&mut self,
+    pub fn integrate_n_range<I: IntoIterator<Item=usize>>(&mut self,
                              ns: I,
                              dt: f64,
                              innerobs: &mut Observer<ODE<State = T>>,
                              outerobs: &mut Observer<ODE<State = T>>)
-                             -> u64 {
+                             -> usize {
         let mut count = 0;
         for n in ns.into_iter() {
             self.integrate_n_steps(n, dt, innerobs);
             count += n;
-            outerobs.observe(self.stepper.get_system_mut());
+            outerobs.observe(self.stepper.get_system_mut(),n);
         }
         count
     }
