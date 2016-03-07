@@ -78,4 +78,24 @@ impl<T> Integrator<T> {
         }
         count
     }
+
+    pub fn warmup_n_steps(&mut self, n: usize, dt: f64) {
+        for _i in 0..n {
+            self.stepper.do_step(dt);
+        }
+    }
+
+    pub fn warmup_time(&mut self, t: f64, dt: f64) -> (f64, usize) {
+        let mut tacc = 0f64;;
+        let mut count = 0;
+
+        // tacc+dt ensures that we don't exceed tf, and that tf - dt < t' <= tf
+        while (tacc + dt) <= t {
+            self.stepper.do_step(dt);
+            tacc += dt;
+            count += 1;
+        }
+
+        (tacc, count)
+    }
 }
