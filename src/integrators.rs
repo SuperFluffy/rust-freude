@@ -51,7 +51,7 @@ impl<T> Integrator<T> {
             let (totacc,tocount) = self.integrate_time(t, dt, innerobs);
             tacc += totacc;
             count += tocount;
-            outerobs.observe(self.stepper.get_system_mut(), count);
+            outerobs.observe(self.stepper.get_system_mut(), tocount);
         }
         (tacc, count)
     }
