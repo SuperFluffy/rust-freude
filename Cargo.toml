@@ -17,4 +17,5 @@ rustc_version = "0.1.6"
 [dependencies]
 float-cmp = "0.2.2"
 itertools = "0.4.7"
-ndarray = { version = "0.4.0-alpha.3", features = ["assign_ops"] }
+ndarray = { git = "https://github.com/SuperFluffy/rust-ndarray", branch = "serde", features = ["assign_ops", "serde"] }
+# ndarray = { version = "0.4.0-alpha.4", features = ["assign_ops"] }
