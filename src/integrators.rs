@@ -22,7 +22,8 @@ impl<T> Integrator<T> {
                              t: f64,
                              dt: f64,
                              obs: &mut Observer<ODE<State = T>>)
-                             -> (f64, usize) {
+                             -> (f64, usize)
+    {
         let mut tacc = 0f64;;
         let mut count = 0;
 
@@ -42,7 +43,8 @@ impl<T> Integrator<T> {
                              dt: f64,
                              innerobs: &mut Observer<ODE<State = T>>,
                              outerobs: &mut Observer<ODE<State = T>>)
-                             -> (f64, usize) {
+                             -> (f64, usize)
+    {
         let mut count = 0;
         let mut tacc = 0f64;
 
@@ -69,7 +71,8 @@ impl<T> Integrator<T> {
                              dt: f64,
                              innerobs: &mut Observer<ODE<State = T>>,
                              outerobs: &mut Observer<ODE<State = T>>)
-                             -> usize {
+                             -> usize
+    {
         let mut count = 0;
         for n in ns.into_iter() {
             self.integrate_n_steps(n, dt, innerobs);
