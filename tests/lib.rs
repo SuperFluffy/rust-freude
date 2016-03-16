@@ -86,7 +86,7 @@ fn integrator_rk4() {
     }
 
     impl<T: ?Sized> Observer<T> for UselessObserver {
-        fn observe(&mut self, _ode: &mut T) { }
+        fn observe(&mut self, _ode: &mut T, _: usize) { }
     }
 
     let result = 2.8010679346446947; // Checked by hand through numpy
@@ -140,7 +140,7 @@ fn integrator_steps_vs_range() {
     }
 
     impl<T: ?Sized> Observer<T> for UselessObserver {
-        fn observe(&mut self, _ode: &mut T) { }
+        fn observe(&mut self, _ode: &mut T, _: usize) { }
     }
 
     // FIXME
