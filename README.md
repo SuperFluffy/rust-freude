@@ -2,7 +2,12 @@
 
 The `freude` crate will provide steppers and integrators to solve ODEs
 (ordinary differential equations). It is inspired by `boost::numeric::odeint`.
-At the moment it is very, very basic and not ready for consumption.
+At the moment it is very, very basic and only supports the explicit 4-th
+order Runge Kutta (RK4) method.
+
+## Todo
+
+Pretty much everything. :-)
 
 ## Trivia
 
