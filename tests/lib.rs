@@ -1,5 +1,3 @@
-#![feature(braced_empty_structs)]
-
 extern crate float_cmp;
 
 extern crate freude;
