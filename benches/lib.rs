@@ -4,6 +4,7 @@ extern crate freude;
 extern crate test;
 
 use freude::{ODE,RungeKutta4,Stepper};
+use std::any::Any;
 use test::black_box;
 
 #[bench]
@@ -16,6 +17,11 @@ fn rk4_freude(bench: &mut test::Bencher) {
 
     impl ODE for SimpleODE {
         type State = f64;
+
+        fn as_any(&self) -> &Any {
+            self
+        }
+
         fn get_state(&self) -> &f64 {
             &self.x
         }
@@ -35,9 +41,9 @@ fn rk4_freude(bench: &mut test::Bencher) {
 
     let sys = SimpleODE { a: 1., x: 1. };
 
-    let mut rk4 = RungeKutta4::<f64>::new(Box::new(sys));
+    let mut rk4 = RungeKutta4::<f64>::new(Box::new(sys), 0.1);
 
-    bench.iter(|| { rk4.do_step(0.1); });
+    bench.iter(|| { rk4.do_step(); });
 }
 
 #[bench]

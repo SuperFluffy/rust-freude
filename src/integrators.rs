@@ -20,16 +20,17 @@ impl<T> Integrator<T> {
 
     pub fn integrate_time(&mut self,
                              t: f64,
-                             dt: f64,
                              obs: &mut Observer<ODE<State = T>>)
                              -> (f64, usize)
     {
         let mut tacc = 0f64;;
         let mut count = 0;
 
+        let dt = self.stepper.timestep();
+
         // tacc+dt ensures that we don't exceed tf, and that tf - dt < t' <= tf
         while (tacc + dt) <= t {
-            self.stepper.do_step(dt);
+            self.stepper.do_step();
             tacc += dt;
             count += 1;
             obs.observe(self.stepper.get_system_mut(),1);
@@ -40,7 +41,6 @@ impl<T> Integrator<T> {
 
     pub fn integrate_time_range<I: IntoIterator<Item=f64>>(&mut self,
                              ts: I,
-                             dt: f64,
                              innerobs: &mut Observer<ODE<State = T>>,
                              outerobs: &mut Observer<ODE<State = T>>)
                              -> (f64, usize)
@@ -50,7 +50,7 @@ impl<T> Integrator<T> {
 
         for t in ts {
         // tacc+dt ensures that we don't exceed tf, and that tf - dt < t' <= tf
-            let (totacc,tocount) = self.integrate_time(t, dt, innerobs);
+            let (totacc,tocount) = self.integrate_time(t, innerobs);
             tacc += totacc;
             count += tocount;
             outerobs.observe(self.stepper.get_system_mut(), tocount);
@@ -58,9 +58,9 @@ impl<T> Integrator<T> {
         (tacc, count)
     }
 
-    pub fn integrate_n_steps(&mut self, n: usize, dt: f64, obs: &mut Observer<ODE<State = T>>) {
+    pub fn integrate_n_steps(&mut self, n: usize, obs: &mut Observer<ODE<State = T>>) {
         for _i in 0..n {
-            self.stepper.do_step(dt);
+            self.stepper.do_step();
 
             obs.observe(self.stepper.get_system_mut(),1);
         }
@@ -68,33 +68,34 @@ impl<T> Integrator<T> {
 
     pub fn integrate_n_range<I: IntoIterator<Item=usize>>(&mut self,
                              ns: I,
-                             dt: f64,
                              innerobs: &mut Observer<ODE<State = T>>,
                              outerobs: &mut Observer<ODE<State = T>>)
                              -> usize
     {
         let mut count = 0;
         for n in ns.into_iter() {
-            self.integrate_n_steps(n, dt, innerobs);
+            self.integrate_n_steps(n, innerobs);
             count += n;
             outerobs.observe(self.stepper.get_system_mut(),n);
         }
         count
     }
 
-    pub fn warmup_n_steps(&mut self, n: usize, dt: f64) {
+    pub fn warmup_n_steps(&mut self, n: usize) {
         for _i in 0..n {
-            self.stepper.do_step(dt);
+            self.stepper.do_step();
         }
     }
 
-    pub fn warmup_time(&mut self, t: f64, dt: f64) -> (f64, usize) {
+    pub fn warmup_time(&mut self, t: f64) -> (f64, usize) {
         let mut tacc = 0f64;;
         let mut count = 0;
 
+        let dt = self.stepper.timestep();
+
         // tacc+dt ensures that we don't exceed tf, and that tf - dt < t' <= tf
         while (tacc + dt) <= t {
-            self.stepper.do_step(dt);
+            self.stepper.do_step();
             tacc += dt;
             count += 1;
         }
