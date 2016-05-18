@@ -9,7 +9,7 @@ use ndarray::{
 use std::cmp;
 
 #[derive(Copy, Clone, Debug)]
-pub enum ZipError {
+pub enum LockstepError {
     NotSameLayout,
     NotSameShape,
 }
@@ -19,13 +19,13 @@ macro_rules! define_zip {
 #[allow(non_snake_case)]
 pub fn $name<A, $($arg,)+ Data, Dim, Func>(a: &mut ArrayBase<Data, Dim>,
     $($arg: ArrayView<$arg, Dim>,)+ mut f: Func)
-    -> Result<(), ZipError>
+    -> Result<(), LockstepError>
     where Data: DataMut<Elem=A>,
           Dim: Dimension,
           Func: FnMut(&mut A, $(&$arg),+)
 {
     if $(a.shape() != $arg.shape() ||)+ false {
-        return Err(ZipError::NotSameShape);
+        return Err(LockstepError::NotSameShape);
     }
     if let Some(a_s) = a.as_slice_mut() {
         let len = a_s.len();
@@ -34,7 +34,7 @@ pub fn $name<A, $($arg,)+ Data, Dim, Func>(a: &mut ArrayBase<Data, Dim>,
             let $arg = if let Some(s) = $arg.as_slice() {
                 s
             } else {
-                return Err(ZipError::NotSameLayout);
+                return Err(LockstepError::NotSameLayout);
             };
             let len = cmp::min(len, $arg.len());
         )+
@@ -48,7 +48,7 @@ pub fn $name<A, $($arg,)+ Data, Dim, Func>(a: &mut ArrayBase<Data, Dim>,
         return Ok(());
     }
     // otherwise
-    Err(ZipError::NotSameLayout)
+    Err(LockstepError::NotSameLayout)
 }
     }
 }
