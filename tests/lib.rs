@@ -1,6 +1,7 @@
 extern crate float_cmp;
 
 extern crate freude;
+extern crate ndarray;
 
 use freude::{Integrator,Observer,ODE,RungeKutta4,Stepper};
 use std::any::Any;
@@ -163,4 +164,18 @@ fn integrator_steps_vs_range() {
     let (_tf,_n2) = integrator2.integrate_time(tf, &mut obs); 
 
     assert!(integrator1.get_state().approx_eq_ulps(integrator2.get_state(), 2i64));
+}
+
+#[test]
+fn test_fold() {
+    use freude::utils::fold_with_2;
+    use ndarray::arr1;
+
+    let a = arr1(&[1,2,3]);
+    let b = arr1(&[1,2,3]);
+    let c = arr1(&[1,2,3]);
+
+    let acc = fold_with_2(a.view(), b.view(), c.view(), 0, |acc,a,b,c| acc + a * b * c).unwrap();
+
+    assert_eq!(acc, 36);
 }
