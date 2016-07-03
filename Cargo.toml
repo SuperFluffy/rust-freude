@@ -15,6 +15,9 @@ name = "freude"
 rustc_version = "0.1.6"
 
 [dependencies]
-float-cmp = "0.2.2"
 itertools = "0.4.7"
 ndarray = "0.5"
+
+[dev-dependencies]
+float-cmp = "0.2.2"
+approx = "0.1"
