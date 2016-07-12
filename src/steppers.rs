@@ -2,7 +2,7 @@
 
 // use ndarray::{Dimension, Scalar};
 use ndarray::Dimension;
-use ndarray::OwnedArray;
+use ndarray::Array;
 
 use traits::ODE;
 use utils::{zip_mut_with_2,zip_mut_with_5};
@@ -210,10 +210,10 @@ impl Stepper for RungeKutta4<Vec<f64>> {
     }
 }
 
-impl<D> RungeKutta4<OwnedArray<f64, D>>
+impl<D> RungeKutta4<Array<f64, D>>
     where D: Dimension
 {
-    pub fn new(system: Box<ODE<State = OwnedArray<f64, D>>>, dt: f64) -> Self {
+    pub fn new(system: Box<ODE<State = Array<f64, D>>>, dt: f64) -> Self {
 
         let temp = system.get_state().clone();
         let k1 = system.get_state().clone();
@@ -236,10 +236,10 @@ impl<D> RungeKutta4<OwnedArray<f64, D>>
     }
 }
 
-impl<D> Stepper for RungeKutta4<OwnedArray<f64, D>>
+impl<D> Stepper for RungeKutta4<Array<f64, D>>
     where D: Dimension
 {
-    type State = OwnedArray<f64,D>;
+    type State = Array<f64,D>;
 
     fn do_step(&mut self) {
         {
