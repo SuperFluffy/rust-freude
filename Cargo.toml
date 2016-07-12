@@ -11,12 +11,9 @@ description = "Something that is supposed to develop into a full fledges ODE lib
 [lib]
 name = "freude"
 
-[build-dependencies]
-rustc_version = "0.1.6"
-
 [dependencies]
-itertools = "0.4.7"
-ndarray = "0.5"
+itertools = "0.4"
+ndarray = "0.6"
 
 [dev-dependencies]
 approx = "0.1"
