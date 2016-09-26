@@ -55,7 +55,7 @@ fn integrator_rk4() {
     struct UselessObserver { };
 
     impl<T: ?Sized> Observer<T> for UselessObserver {
-        fn observe(&mut self, _ode: &mut T, _: usize) { }
+        fn observe(&mut self, _ode: &mut T, _: f64) { }
     }
 
     let sys = SimpleODE { a: 1., c: 1., x: 1. };
@@ -81,7 +81,7 @@ fn integrator_steps_vs_range() {
     struct UselessObserver { };
 
     impl<T: ?Sized> Observer<T> for UselessObserver {
-        fn observe(&mut self, _ode: &mut T, _: usize) { }
+        fn observe(&mut self, _ode: &mut T, _: f64) { }
     }
 
     // FIXME
