@@ -18,7 +18,7 @@ impl<T> Integrator<T> {
         self.stepper.get_system()
     }
 
-    pub fn get_system_mut(&mut self) -> &ODE<State=T> {
+    pub fn get_system_mut(&mut self) -> &mut (ODE<State=T> + 'static) {
         self.stepper.get_system_mut()
     }
 
