@@ -32,7 +32,7 @@ impl<T> Integrator<T> {
 
         let dt = self.stepper.timestep();
 
-        // tacc+dt ensures that we don't exceed tf, and that tf - dt < t' <= tf
+        // Ensure t_final is not exceeded
         while (tacc + dt) <= t {
             self.stepper.do_step();
             tacc += dt;
@@ -52,7 +52,6 @@ impl<T> Integrator<T> {
         let mut tacc = 0f64;
 
         for t in ts {
-        // tacc+dt ensures that we don't exceed tf, and that tf - dt < t' <= tf
             let (totacc,tocount) = self.integrate_time(t, obs);
             tacc += totacc;
             count += tocount;
@@ -99,7 +98,7 @@ impl<T> Integrator<T> {
 
         let dt = self.stepper.timestep();
 
-        // tacc+dt ensures that we don't exceed tf, and that tf - dt < t' <= tf
+        // Ensure t_final is not exceeded
         while (tacc + dt) <= t {
             self.stepper.do_step();
             tacc += dt;
