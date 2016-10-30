@@ -4,11 +4,13 @@ extern crate ndarray;
 
 // Re-exports
 pub use integrators::Integrator;
-pub use traits::{Observer, ODE};
+pub use observers::Observer;
+pub use traits::ODE;
 pub use steppers::{Stepper, RungeKutta4};
 
 mod integrators;
 mod steppers;
 mod traits;
 
+pub mod observers;
 pub mod utils;
