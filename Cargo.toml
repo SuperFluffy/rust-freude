@@ -13,7 +13,7 @@ name = "freude"
 
 [dependencies]
 itertools = "0.4"
-ndarray = "0.6"
+ndarray = "0.7"
 
 [dev-dependencies]
 approx = "0.1"
