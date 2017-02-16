@@ -8,7 +8,7 @@ repository = "https://github.com/SuperFluffy/rust-freude"
 
 description = "Something that is supposed to develop into a full fledges ODE library."
 
-keywords = ["ODE", "integrator", "numerics", "ndarray", "rungekutta", "rk4", "euler", "heun"]
+keywords = ["ODE", "numerics", "ndarray", "rungekutta", "euler"]
 categories = ["science"]
 
 [lib]
