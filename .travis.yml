@@ -1,0 +1,15 @@
+language: rust
+sudo: required
+matrix:
+  include:
+    - rust: stable
+    - rust: beta
+    - rust: nightly
+branches:
+  only:
+    - master
+script:
+  - |
+      cargo build --verbose &&
+      cargo test --verbose &&
+      cargo test --release --verbose &&
