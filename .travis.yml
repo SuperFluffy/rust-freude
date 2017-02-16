@@ -12,4 +12,4 @@ script:
   - |
       cargo build --verbose &&
       cargo test --verbose &&
-      cargo test --release --verbose &&
+      cargo test --release --verbose
