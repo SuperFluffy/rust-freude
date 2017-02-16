@@ -9,6 +9,14 @@ order Runge Kutta (RK4) method.
 
 Pretty much everything. :-)
 
+## Recent changes
+
++ 0.1
+    + Initial release
+    + Definition of explicit, fixed step integrators, steppers
+    + Definition of ODEs
+    + Implementation of Runge-Kutta-4 method
+
 ## Trivia
 
 The crate's name `freude` is inspired by Beethoven's *Ode an die Freude* (“Ode to
