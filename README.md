@@ -11,7 +11,9 @@ Pretty much everything. :-)
 
 ## Recent changes
 
-+ 0.1
++ 0.1.1
+    + Implement Euler and Heun methods
++ 0.1.0
     + Initial release
     + Definition of explicit, fixed step integrators, steppers
     + Definition of ODEs
