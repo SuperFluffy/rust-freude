@@ -6,7 +6,7 @@ extern crate ndarray;
 pub use integrators::Integrator;
 pub use observers::Observer;
 pub use traits::ODE;
-pub use steppers::{Stepper, RungeKutta4};
+pub use steppers::*;
 
 mod integrators;
 mod steppers;

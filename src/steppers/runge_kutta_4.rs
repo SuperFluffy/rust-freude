@@ -1,25 +1,9 @@
-// use std::ops::{Add, Mul};
-
-// use ndarray::{Dimension, Scalar};
 use ndarray::{ArrayBase,DataMut,DataClone,Dimension};
 
 use traits::ODE;
 use utils::{zip_mut_with_2,zip_mut_with_5};
 
-pub trait Stepper {
-    type System: ODE<State = Self::State>;
-    type State: Clone;
-
-    fn do_step(&mut self);
-
-    fn timestep(&self) -> f64;
-
-    fn get_state(&self) -> &Self::State;
-    fn get_state_mut(&mut self) -> &mut Self::State;
-
-    fn get_system(&self) -> &Self::System;
-    fn get_system_mut(&mut self) -> &mut Self::System;
-}
+use super::Stepper;
 
 pub struct RungeKutta4<S, T> {
     system: S,
