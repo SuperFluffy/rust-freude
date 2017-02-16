@@ -6,7 +6,7 @@ license = "MIT/Apache-2.0"
 
 repository = "https://github.com/SuperFluffy/rust-freude"
 
-description = "Something that is supposed to develop into a full fledges ODE library."
+description = "Something that is supposed to develop into a fully fledged ODE library."
 
 keywords = ["ODE", "numerics", "ndarray", "rungekutta", "euler"]
 categories = ["science"]
