@@ -1,30 +1,36 @@
 use std::marker::PhantomData;
 
 pub trait Observer {
+    type State;
     type System;
     // The observer should be allowed to affect the observable,
     // e.g. in the case of reading the Lyapunov exponents, or resetting
     // a phase to the range [0,2π)
-    fn observe(&mut self, &mut Self::System, f64);
+    fn observe(&mut self, &Self::System, &mut Self::State, f64);
 
-    fn finalize(&mut self, &mut Self::System);
+    fn finalize(&mut self, &Self::System, &mut Self::State);
 }
 
 #[derive(Clone)]
-pub struct NullObserver<T> {
-    _phantom: PhantomData<T>,
+pub struct NullObserver<St,Sy> {
+    _phantom_state: PhantomData<St>,
+    _phantom_system: PhantomData<Sy>,
 }
 
-impl<T> NullObserver<T> {
+impl<St,Sy> NullObserver<St,Sy> {
     pub fn new() -> Self {
-        NullObserver { _phantom: PhantomData }
+        NullObserver {
+            _phantom_state: PhantomData,
+            _phantom_system: PhantomData,
+        }
     }
 }
 
-impl<T> Observer for NullObserver<T> {
-    type System = T;
+impl<St,Sy> Observer for NullObserver<St,Sy> {
+    type State = St;
+    type System = Sy;
 
-    fn observe(&mut self, _: &mut T, _: f64) { }
+    fn observe(&mut self, _: &Sy, _: &mut St, _: f64) { }
 
-    fn finalize(&mut self, _: &mut T) { }
+    fn finalize(&mut self, _: &Sy, _: &mut St) { }
 }

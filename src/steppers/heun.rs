@@ -6,41 +6,48 @@ use utils::{zip_mut_with_2,zip_mut_with_3};
 use super::Stepper;
 
 pub struct Heun<S, T> {
+    dt: f64,
+    dt_2: f64,
+
     system: S,
 
-    initial: T,
     temp: T,
     k1: T,
     k2: T,
-
-    dt: f64,
-    dt_2: f64,
 }
 
 impl<S,T> Heun<S,T>
     where S: ODE<State=T>,
-          T: Clone
+          T: Clone,
 {
-    pub fn new(system: S, dt: f64) -> Self {
+    pub fn new(mut system: S, dt: f64, state: &T) -> Self {
+        let temp = system.differentiate(&state);
+        let k1 = system.differentiate(&state);
+        let k2 = system.differentiate(&state);
 
-        let initial = system.get_state().clone();
-        let temp = system.get_state().clone();
-        let k1 = system.get_state().clone();
-        let k2 = system.get_state().clone();
+        let dt_2 = dt/2.0;
 
         Heun {
+            dt: dt,
+            dt_2: dt_2,
             system: system,
-            initial: initial,
+
             temp: temp,
             k1: k1,
             k2: k2,
-            dt: dt,
-            dt_2: dt/2.0,
         }
     }
 
-    pub fn unwrap(self) -> (S, f64) {
-        (self.system, self.dt)
+    fn system_ref(&self) -> &S {
+        &self.system
+    }
+
+    fn system_mut(&mut self) -> &mut S {
+        &mut self.system
+    }
+
+    fn timestep(&self) -> f64 {
+        self.dt
     }
 }
 
@@ -50,32 +57,23 @@ impl<S> Stepper for Heun<S,f64>
     type System = S;
     type State = f64;
 
-    fn do_step(&mut self) {
-        self.initial = self.system.get_state().clone();
-        self.system.differentiate_into(&self.initial, &mut self.k1);
-        self.system.differentiate_into(&(self.initial + &(self.dt * &self.k1)), &mut self.k2);
-        self.temp = &self.initial + &(self.dt_2 * &self.k1) + &(self.dt_2 * &self.k2);
-        self.system.update_state(&self.temp);
+    fn do_step(&mut self, state: &mut Self::State) {
+        self.system.differentiate_into(state, &mut self.k1);
+        self.system.differentiate_into(&(*state + &(self.dt * &self.k1)), &mut self.k2);
+        self.temp = *state + &(self.dt_2 * &self.k1) + &(self.dt_2 * &self.k2);
+        self.system.update_state(state, &self.temp);
     }
 
-    fn get_state(&self) -> &Self::State {
-        self.system.get_state()
+    fn system_ref(&self) -> &Self::System {
+        self.system_ref()
     }
 
-    fn get_state_mut(&mut self) -> &mut Self::State {
-        self.system.get_state_mut()
-    }
-
-    fn get_system(&self) -> &Self::System {
-        &self.system
-    }
-
-    fn get_system_mut(&mut self) -> &mut Self::System {
-        &mut self.system
+    fn system_mut(&mut self) -> &mut Self::System {
+        self.system_mut()
     }
 
     fn timestep(&self) -> f64 {
-        self.dt
+        self.timestep()
     }
 }
 
@@ -85,44 +83,34 @@ impl<S> Stepper for Heun<S, Vec<f64>>
     type System = S;
     type State = Vec<f64>;
 
-    fn do_step(&mut self) {
-        self.initial.copy_from_slice(self.system.get_state());
+    fn do_step(&mut self, state: &mut Self::State) {
+        self.system.differentiate_into(state, &mut self.k1);
 
-        self.system.differentiate_into(&mut self.initial, &mut self.k1);
-
-        for (t, i, k) in izip!(self.temp.iter_mut(), self.initial.iter(), self.k1.iter()) {
-            *t = *i + self.dt * k;
+        for (t, s, k) in izip!(self.temp.iter_mut(), state.iter(), self.k1.iter()) {
+            *t = *s + self.dt * k;
         }
-        self.system.differentiate_into(&mut self.temp, &mut self.k2);
+        self.system.differentiate_into(&self.temp, &mut self.k2);
 
-        for (t, i, k1, k2) in izip!(self.temp.iter_mut(),
-            self.initial.iter(),
+        for (t, s, k1, k2) in izip!(self.temp.iter_mut(),
+            state.iter(),
             self.k1.iter(),
-            self.k2.iter())
-        {
-            *t = i + self.dt_2 * k1 + self.dt_2 * k2;
+            self.k2.iter()
+        ){
+            *t = s + self.dt_2 * k1 + self.dt_2 * k2;
         }
-        self.system.update_state(&self.temp);
+        self.system.update_state(state, &self.temp);
     }
 
-    fn get_state(&self) -> &Self::State {
-        self.system.get_state()
+    fn system_ref(&self) -> &Self::System {
+        self.system_ref()
     }
 
-    fn get_state_mut(&mut self) -> &mut Self::State {
-        self.system.get_state_mut()
-    }
-
-    fn get_system(&self) -> &Self::System {
-        &self.system
-    }
-
-    fn get_system_mut(&mut self) -> &mut Self::System {
-        &mut self.system
+    fn system_mut(&mut self) -> &mut Self::System {
+        self.system_mut()
     }
 
     fn timestep(&self) -> f64 {
-        self.dt
+        self.timestep()
     }
 }
 
@@ -134,46 +122,36 @@ impl<S,T,D> Stepper for Heun<T, ArrayBase<S, D>>
     type System = T;
     type State = ArrayBase<S,D>;
 
-    fn do_step(&mut self) {
-        self.initial.assign(self.system.get_state());
-
-        self.system.differentiate_into(&self.initial, &mut self.k1);
+    fn do_step(&mut self, state: &mut Self::State) {
+        self.system.differentiate_into(state, &mut self.k1);
 
         // Need to assign the values here, because closures try to immutably borrow the entire
         // self, which fails because self.temp is borrowed mutably.
         let dt = self.dt;
         let dt_2 = self.dt_2;
 
-        zip_mut_with_2(&mut self.temp, self.initial.view(), self.k1.view(), |t,i,k| {
-            *t = i + dt * k;
+        zip_mut_with_2(&mut self.temp, state.view(), self.k1.view(), |t,s,k| {
+            *t = s + dt * k;
         }).unwrap();
         self.system.differentiate_into(&self.temp, &mut self.k2);
 
-        zip_mut_with_3(&mut self.temp, self.initial.view(), self.k1.view(), self.k2.view(),
-            |t,i,k1,k2| {
-                *t = i + dt_2 * k1 + dt_2 * k2;
+        zip_mut_with_3(&mut self.temp, state.view(), self.k1.view(), self.k2.view(),
+            |t,s,k1,k2| {
+                *t = s + dt_2 * k1 + dt_2 * k2;
         }).unwrap();
 
-        self.system.update_state(&self.temp);
+        self.system.update_state(state, &self.temp);
     }
 
-    fn get_state(&self) -> &Self::State {
-        self.system.get_state()
+    fn system_ref(&self) -> &Self::System {
+        self.system_ref()
     }
 
-    fn get_state_mut(&mut self) -> &mut Self::State {
-        self.system.get_state_mut()
-    }
-
-    fn get_system(&self) -> &Self::System {
-        &self.system
-    }
-
-    fn get_system_mut(&mut self) -> &mut Self::System {
-        &mut self.system
+    fn system_mut(&mut self) -> &mut Self::System {
+        self.system_mut()
     }
 
     fn timestep(&self) -> f64 {
-        self.dt
+        self.timestep()
     }
 }

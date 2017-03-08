@@ -11,6 +11,10 @@ Pretty much everything. :-)
 
 ## Recent changes
 
++ 0.2.0
+    + Complete rework of the ODE, stepper, and integrator logic;
+    + System state is no longer considered an internal property of an ODE, but a
+    parameter passed to the stepper.
 + 0.1.1
     + Implement Euler and Heun methods
 + 0.1.0

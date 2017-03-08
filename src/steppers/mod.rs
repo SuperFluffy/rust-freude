@@ -13,13 +13,10 @@ pub trait Stepper {
     type System: ODE<State = Self::State>;
     type State: Clone;
 
-    fn do_step(&mut self);
+    fn do_step(&mut self, &mut Self::State);
+
+    fn system_ref(&self) -> &Self::System;
+    fn system_mut(&mut self) -> &mut Self::System;
 
     fn timestep(&self) -> f64;
-
-    fn get_state(&self) -> &Self::State;
-    fn get_state_mut(&mut self) -> &mut Self::State;
-
-    fn get_system(&self) -> &Self::System;
-    fn get_system_mut(&mut self) -> &mut Self::System;
 }
