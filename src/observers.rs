@@ -7,6 +7,10 @@ pub trait Observer {
     // e.g. in the case of reading the Lyapunov exponents, or resetting
     // a phase to the range [0,2π)
     fn observe(&mut self, &Self::System, &mut Self::State, f64);
+
+    fn after_run(&mut self, &Self::System, &mut Self::State) { }
+
+    fn after_warmup(&mut self, &Self::System, &mut Self::State) { }
 }
 
 #[derive(Clone)]

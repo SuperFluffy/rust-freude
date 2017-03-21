@@ -109,25 +109,19 @@ impl<O,D,S,T> Integrator<O, S, T>
         (tacc, count)
     }
 
-    pub fn warmup_n_steps(&mut self, n: usize) {
-        for _i in 0..n {
-            self.stepper.do_step(&mut self.state);
-        }
+    pub fn warmup_n_steps(&mut self, n: usize) -> (f64, usize) {
+        let (tacc, steps) = self.integrate_n_steps(n);
+
+        self.observer.after_warmup(self.stepper.system_ref(), &mut self.state);
+
+        (tacc, steps)
     }
 
     pub fn warmup_time(&mut self, t: f64) -> (f64, usize) {
-        let mut tacc = 0f64;;
-        let mut count = 0;
+        let (tacc, steps) = self.integrate_time(t);
 
-        let dt = self.stepper.timestep();
+        self.observer.after_warmup(self.stepper.system_ref(), &mut self.state);
 
-        // Ensure t_final is not exceeded
-        while (tacc + dt) <= t {
-            self.stepper.do_step(&mut self.state);
-            tacc += dt;
-            count += 1;
-        }
-
-        (tacc, count)
+        (tacc, steps)
     }
 }
