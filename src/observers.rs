@@ -7,8 +7,6 @@ pub trait Observer {
     // e.g. in the case of reading the Lyapunov exponents, or resetting
     // a phase to the range [0,2π)
     fn observe(&mut self, &Self::System, &mut Self::State, f64);
-
-    fn finalize(&mut self, &Self::System, &mut Self::State);
 }
 
 #[derive(Clone)]
@@ -31,6 +29,4 @@ impl<St,Sy> Observer for NullObserver<St,Sy> {
     type System = Sy;
 
     fn observe(&mut self, _: &Sy, _: &mut St, _: f64) { }
-
-    fn finalize(&mut self, _: &Sy, _: &mut St) { }
 }
