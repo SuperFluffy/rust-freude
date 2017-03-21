@@ -109,6 +109,10 @@ impl<O,D,S,T> Integrator<O, S, T>
         (tacc, count)
     }
 
+    pub fn flush(&mut self) {
+        self.observer.after_run(self.stepper.system_ref(), &mut self.state);
+    }
+
     pub fn warmup_n_steps(&mut self, n: usize) -> (f64, usize) {
         let (tacc, steps) = self.integrate_n_steps(n);
 
