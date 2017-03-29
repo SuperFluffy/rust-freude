@@ -18,27 +18,16 @@ fn rk4_freude(bench: &mut test::Bencher) {
     impl ODE for SimpleODE {
         type State = f64;
 
-        fn get_state(&self) -> &f64 {
-            &self.x
-        }
-
-        fn get_state_mut(&mut self) -> &mut f64 {
-            &mut self.x
-        }
-
         fn differentiate_into(&mut self, x: &f64, into: &mut f64) {
             *into = self.a + x.sin();
         }
-
-        fn update_state(&mut self, x: &f64) {
-            self.x = *x;
-        }
     }
 
-    let sys = SimpleODE { a: 1., x: 1. };
+    let mut x_init = 1.0;
+    let sys = SimpleODE { a: 1., x: x_init };
 
-    let mut rk4 = RungeKutta4::new(sys, 0.1);
-    bench.iter(|| { rk4.do_step(); });
+    let mut rk4 = RungeKutta4::new(sys, 0.1, &x_init);
+    bench.iter(|| { rk4.do_step(&mut x_init); });
     let _x = black_box(rk4);
 }
 
