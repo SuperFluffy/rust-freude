@@ -16,7 +16,10 @@ name = "freude"
 
 [dependencies]
 itertools = "0.4"
-ndarray = "0.8"
+ndarray = "0.8.1"
 
 [dev-dependencies]
 approx = "0.1"
+blas = "0.15"
+ndarray-rand = "0.4"
+rand = "0.3"
