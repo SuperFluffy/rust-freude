@@ -1,7 +1,6 @@
 use ndarray::{ArrayBase,DataMut,DataClone,Dimension};
 
 use traits::ODE;
-use utils::{zip_mut_with_2,zip_mut_with_3};
 
 use super::Stepper;
 
@@ -84,20 +83,19 @@ impl<S> Stepper for Heun<S, Vec<f64>>
     type State = Vec<f64>;
 
     fn do_step(&mut self, state: &mut Self::State) {
+        let dt = self.dt;
+        let dt_2 = self.dt_2;
+
         self.system.differentiate_into(state, &mut self.k1);
 
-        for (t, s, k) in izip!(self.temp.iter_mut(), state.iter(), self.k1.iter()) {
-            *t = *s + self.dt * k;
-        }
+        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1) in {
+            *t = s + dt * k1
+        });
         self.system.differentiate_into(&self.temp, &mut self.k2);
 
-        for (t, s, k1, k2) in izip!(self.temp.iter_mut(),
-            state.iter(),
-            self.k1.iter(),
-            self.k2.iter()
-        ){
-            *t = s + self.dt_2 * k1 + self.dt_2 * k2;
-        }
+        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1), k2 (&self.k2) in {
+            *t = s + dt_2 * ( k1 + k2 )
+        });
         self.system.update_state(state, &self.temp);
     }
 
@@ -130,15 +128,14 @@ impl<S,T,D> Stepper for Heun<T, ArrayBase<S, D>>
         let dt = self.dt;
         let dt_2 = self.dt_2;
 
-        zip_mut_with_2(&mut self.temp, state.view(), self.k1.view(), |t,s,k| {
-            *t = s + dt * k;
-        }).unwrap();
+        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1) in {
+            *t = s + dt * k1
+        });
         self.system.differentiate_into(&self.temp, &mut self.k2);
 
-        zip_mut_with_3(&mut self.temp, state.view(), self.k1.view(), self.k2.view(),
-            |t,s,k1,k2| {
-                *t = s + dt_2 * k1 + dt_2 * k2;
-        }).unwrap();
+        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1), k2 (&self.k2) in {
+            *t = s + dt_2 * ( k1 + k2 )
+        });
 
         self.system.update_state(state, &self.temp);
     }

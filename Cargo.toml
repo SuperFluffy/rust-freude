@@ -15,7 +15,6 @@ categories = ["science"]
 name = "freude"
 
 [dependencies]
-itertools = "0.4"
 ndarray = "0.8.1"
 
 [dev-dependencies]

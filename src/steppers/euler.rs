@@ -71,11 +71,13 @@ impl<S> Stepper for Euler<S, Vec<f64>>
     type State = Vec<f64>;
 
     fn do_step(&mut self, state: &mut Self::State) {
+        let dt = self.dt;
         self.system.differentiate_into(state, &mut self.temp);
 
-        for (t, s) in izip!(self.temp.iter_mut(), state.iter()) {
-            *t = s + self.dt * *t;
-        }
+        azip!(mut t (&mut self.temp), s (&*state) in {
+            *t = s + dt * *t;
+        });
+
         self.system.update_state(state, &self.temp);
     }
 
@@ -107,7 +109,7 @@ impl<S,T,D> Stepper for Euler<T, ArrayBase<S, D>>
         // self, which fails because self.temp is borrowed mutably.
         let dt = self.dt;
 
-        self.temp.zip_mut_with(&state.view(), |t,s| {
+        azip!(mut t (&mut self.temp), s (&* state) in {
             *t = s + dt * *t;
         });
 

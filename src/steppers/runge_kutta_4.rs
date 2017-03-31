@@ -1,7 +1,6 @@
 use ndarray::{ArrayBase,DataMut,DataClone,Dimension};
 
 use traits::ODE;
-use utils::{zip_mut_with_2,zip_mut_with_5};
 
 use super::Stepper;
 
@@ -99,32 +98,31 @@ impl<S> Stepper for RungeKutta4<S, Vec<f64>>
     type State = Vec<f64>;
 
     fn do_step(&mut self, state: &mut Self::State) {
+        let dt = self.dt;
+        let dt_2 = self.dt_2;
+        let dt_3 = self.dt_3;
+        let dt_6 = self.dt_6;
+
         self.system.differentiate_into(state, &mut self.k1);
 
-        for (t, s, k) in izip!(self.temp.iter_mut(), state.iter(), self.k1.iter()) {
-            *t = *s + self.dt_2 * k;
-        }
+        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1) in {
+            *t = s + dt_2 * k1
+        });
         self.system.differentiate_into(&self.temp, &mut self.k2);
 
-        for (t, s, k) in izip!(self.temp.iter_mut(), state.iter(), self.k2.iter()) {
-            *t = *s + self.dt_2 * k;
-        }
+        azip!(mut t (&mut self.temp), s (&*state), k2 (&self.k2) in {
+            *t = s + dt_2 * k2
+        });
         self.system.differentiate_into(&self.temp, &mut self.k3);
 
-        for (t, s, k) in izip!(self.temp.iter_mut(), state.iter(), self.k3.iter()) {
-            *t = *s + self.dt * k;
-        }
+        azip!(mut t (&mut self.temp), s (&*state), k3 (&self.k3) in {
+            *t = s + dt * k3
+        });
         self.system.differentiate_into(&self.temp, &mut self.k4);
 
-        for (t, s, k1, k2, k3, k4) in izip!(self.temp.iter_mut(),
-            state.iter(),
-            self.k1.iter(),
-            self.k2.iter(),
-            self.k3.iter(),
-            self.k4.iter())
-        {
-            *t = s + self.dt_6 * k1 + self.dt_3 * k2 + self.dt_3 * k3 + self.dt_6 * k4;
-        }
+        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1), k2 (&self.k2), k3 (&self.k3), k4 (&self.k4) in {
+            *t = s + dt_6 * k1 + dt_3 * k2 + dt_3 * k3 + dt_6 * k4;
+        });
         self.system.update_state(state, &self.temp);
     }
 
@@ -159,25 +157,27 @@ impl<S,T,D> Stepper for RungeKutta4<T, ArrayBase<S, D>>
         let dt_3 = self.dt_3;
         let dt_6 = self.dt_6;
 
-        zip_mut_with_2(&mut self.temp, state.view(), self.k1.view(), |t,s,k| {
-            *t = s + dt_2 * k;
-        }).unwrap();
+        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1) in {
+            *t = s + dt_2 * k1
+        });
+
         self.system.differentiate_into(&self.temp, &mut self.k2);
 
-        zip_mut_with_2(&mut self.temp, state.view(), self.k2.view(), |t,s,k| {
-            *t = s + dt_2 * k;
-        }).unwrap();
+        azip!(mut t (&mut self.temp), s (&*state), k2 (&self.k2) in {
+            *t = s + dt_2 * k2
+        });
+
         self.system.differentiate_into(&self.temp, &mut self.k3);
 
-        zip_mut_with_2(&mut self.temp, state.view(), self.k3.view(), |t,s,k| {
-            *t = s + dt * k;
-        }).unwrap();
+        azip!(mut t (&mut self.temp), s (&*state), k3 (&self.k3) in {
+            *t = s + dt * k3
+        });
+
         self.system.differentiate_into(&self.temp, &mut self.k4);
 
-        zip_mut_with_5(&mut self.temp, state.view(), self.k1.view(), self.k2.view(), self.k3.view(), self.k4.view(),
-            |t,s,k1,k2,k3,k4| {
-                *t = s + dt_6 * k1 + dt_3 * k2 + dt_3 * k3 + dt_6 * k4;
-        }).unwrap();
+        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1), k2 (&self.k2), k3 (&self.k3), k4 (&self.k4) in {
+            *t = s + dt_6 * k1 + dt_3 * k2 + dt_3 * k3 + dt_6 * k4
+        });
 
         self.system.update_state(state, &self.temp);
     }

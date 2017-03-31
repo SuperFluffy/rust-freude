@@ -1,5 +1,4 @@
-#[macro_use(izip)]
-extern crate itertools;
+#[macro_use(azip)]
 extern crate ndarray;
 
 // Re-exports
