@@ -2,6 +2,8 @@
 
 extern crate blas;
 extern crate freude;
+
+#[macro_use(azip)]
 extern crate ndarray;
 extern crate ndarray_rand;
 extern crate rand;
@@ -11,11 +13,46 @@ use blas::c as cblas;
 use ndarray::prelude::*;
 use ndarray_rand::RandomExt;
 
+use rand::distributions::IndependentSample;
 use rand::distributions::{Normal, Range};
 use std::f64;
 
 use freude::{ODE,RungeKutta4,Stepper};
 use test::black_box;
+
+#[derive(Clone)]
+struct Kuramoto {
+    frequencies: Vec<f64>,
+    size: usize,
+    temp_sin: Vec<f64>,
+    temp_cos: Vec<f64>,
+}
+
+impl ODE for Kuramoto {
+    type State = Vec<f64>;
+
+    fn differentiate_into(&mut self, state: &Vec<f64>, derivative: &mut Vec<f64>) {
+        // dφ_i/dt =  ω_i + 1/N ∑_j { sin(φ_j - φ_i) }
+        //         =  ω_i + 1/N ∑_j { sin(φ_j)cos(φ_i)  - cos(φ_j)sin(φ_i) }
+        for (t, s) in self.temp_sin.iter_mut().zip(state.iter()) {
+            *t = f64::sin(*s);
+        }
+
+        for (t, c) in self.temp_cos.iter_mut().zip(state.iter()) {
+            *t = f64::cos(*c);
+        }
+
+        let mut sin_sum = self.temp_sin.iter().fold(0.0, |acc, s| { acc + s });
+        let mut cos_sum = self.temp_cos.iter().fold(0.0, |acc, c| { acc + c });
+
+        sin_sum /= self.size as f64;
+        cos_sum /= self.size as f64;
+
+        azip!(mut d (derivative), f (&self.frequencies), sin (&self.temp_sin), cos (&self.temp_cos) in {
+            *d = f + sin_sum * cos - cos_sum * sin
+        })
+    }
+}
 
 #[derive(Clone)]
 struct ChaoticNeuralNet {
@@ -123,6 +160,39 @@ fn chaotic_net(bench: &mut test::Bencher) {
 
     let mut rk4 = RungeKutta4::new(chaotic_net, 0.1, &initial_state);
 
+    bench.iter(|| { rk4.do_step(&mut initial_state); });
+    let _x = black_box(rk4);
+}
+
+#[bench]
+fn kuramoto_vec(bench: &mut test::Bencher) {
+    let size = 8192;
+
+    let mut rng = ::rand::thread_rng();
+
+    let dist = Normal::new(0.0, 1.0);
+    let frequencies: Vec<_> = ::std::iter::repeat(()).take(size).map(|_| {
+        dist.ind_sample(&mut rng)
+    }).collect();
+
+    let temp_sin = vec![0.0; size];
+    let temp_cos = vec![0.0; size];
+
+    let kuramoto = Kuramoto {
+        frequencies: frequencies,
+        size: size,
+        temp_sin: temp_sin,
+        temp_cos: temp_cos,
+    };
+
+    let pi = ::std::f64::consts::PI;
+    let between = Range::new(-pi, pi);
+
+    let mut initial_state: Vec<_> = ::std::iter::repeat(()).take(size).map(|_| {
+        between.ind_sample(&mut rng)
+    }).collect();
+
+    let mut rk4 = RungeKutta4::new(kuramoto, 0.1, &initial_state);
     bench.iter(|| { rk4.do_step(&mut initial_state); });
     let _x = black_box(rk4);
 }
