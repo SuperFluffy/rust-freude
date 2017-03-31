@@ -21,21 +21,6 @@ impl ODE for SimpleODE {
     }
 }
 
-
-#[test]
-fn test_fold() {
-    use freude::utils::fold_with_2;
-    use ndarray::arr1;
-
-    let a = arr1(&[1,2,3]);
-    let b = arr1(&[1,2,3]);
-    let c = arr1(&[1,2,3]);
-
-    let acc = fold_with_2(a.view(), b.view(), c.view(), 0, |acc,a,b,c| acc + a * b * c).unwrap();
-
-    assert_eq!(acc, 36);
-}
-
 macro_rules! mk_stepper_test {
     ($stepper:ident, $error_order:expr) => {
         #[allow(non_snake_case)]
