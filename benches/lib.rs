@@ -20,26 +20,18 @@ use test::black_box;
 #[derive(Clone)]
 struct ChaoticNeuralNet {
     coupling: Array2<f64>,
-    num_lyapunov_vectors: usize,
     nonlinearity: f64,
     size: usize,
-    temp_prod: Array2<f64>,
     temp_tanh: Array1<f64>,
-    temp_tanh2: Array1<f64>,
 }
 
 impl ODE for ChaoticNeuralNet {
-    type State = Array2<f64>;
+    type State = Array1<f64>;
 
-    fn differentiate_into(&mut self, state: &Array2<f64>, derivative: &mut Array2<f64>) {
+    fn differentiate_into(&mut self, state: &Array1<f64>, derivative: &mut Array1<f64>) {
+        // dx_i/dt = x_i - ∑_j J_ij tanh(g·x_j)
         let g = self.nonlinearity;
-        self.temp_tanh.zip_mut_with(&state.row(0), |t, x| { *t = f64::tanh(g * *x); });
-
-        let derivative = derivative.view_mut();
-
-        let (mut system_derivative, mut lyapunov_derivative) = derivative.split_at(Axis(0), 1);
-
-        let mut system_derivative = system_derivative.row_mut(0);
+        self.temp_tanh.zip_mut_with(&state, |t, x| { *t = f64::tanh(g * *x); });
 
         // Calculate ∑_j J_ij · tanh(g · x_j)
         cblas::dgemv(cblas::Layout::RowMajor, // layout
@@ -52,43 +44,11 @@ impl ODE for ChaoticNeuralNet {
             self.temp_tanh.as_slice_memory_order().unwrap(), // x
             1, // incx
             0.0, // beta
-            system_derivative.as_slice_memory_order_mut().unwrap(), // y
+            derivative.as_slice_memory_order_mut().unwrap(), // y
             1, // incy
         );
-
-        system_derivative -= &state.row(0);
-
-        {
-        let temp_tanh = &self.temp_tanh;
-        self.temp_tanh2.zip_mut_with(temp_tanh, |t2, t| { *t2 = 1.0 - t.powi(2); });
-        }
-
-        for i in 0..self.num_lyapunov_vectors {
-            let mut t = self.temp_prod.row_mut(i);
-            t.assign(&self.temp_tanh2);
-            t *= &state.row(i+1);
-        }
-
-        cblas::dgemm(cblas::Layout::ColumnMajor, // layout
-            cblas::Transpose::Ordinary, // transa
-            cblas::Transpose::None, // transb
-            self.size as i32, // m
-            self.num_lyapunov_vectors as i32, // n
-            self.size as i32, // k
-            self.nonlinearity, // alpha
-            self.coupling.as_slice_memory_order().unwrap(), // a
-            self.size as i32, // lda
-            self.temp_prod.as_slice_memory_order().unwrap(), // b
-            self.size as i32, // ldb
-            0.0, // beta
-            lyapunov_derivative.as_slice_memory_order_mut().unwrap(), // y
-            self.size as i32, // ldc
-        );
-
-        for i in 0..self.num_lyapunov_vectors {
-            let mut v = lyapunov_derivative.row_mut(i);
-            v -= &state.row(i+1);
-        }
+        let mut derivative = derivative.view_mut();
+        derivative -= state;
     }
 }
 
@@ -139,35 +99,27 @@ fn rk4_manual(bench: &mut test::Bencher) {
 
 #[bench]
 fn chaotic_net(bench: &mut test::Bencher) {
-    let size = 512;
+    let size = 8192;
     let mean = 0.0;
     let nonlinearity = 1.5;
     let std_dev = 1.1;
-
-    let num_lyapunov = size;
 
     let dist = Normal::new(mean, std_dev / f64::sqrt(size as f64));
     let mut coupling = Array2::random([size,size], dist);
     coupling.diag_mut().map_inplace(|c| { *c = 0.0; });
 
-    let temp_prod = Array2::zeros((num_lyapunov,size));
     let temp_tanh = Array1::zeros(size);
-    let temp_tanh2 = Array1::zeros(size);
 
     let chaotic_net = ChaoticNeuralNet {
         coupling: coupling,
-        num_lyapunov_vectors: num_lyapunov,
         nonlinearity: nonlinearity,
         size: size,
-        temp_prod: temp_prod,
         temp_tanh: temp_tanh,
-        temp_tanh2: temp_tanh2,
     };
 
     let between = Range::new(-1.0, 1.0);
-    let rows = 1 + num_lyapunov;
 
-    let mut initial_state = Array2::random([rows, size], between);
+    let mut initial_state = Array1::random(size, between);
 
     let mut rk4 = RungeKutta4::new(chaotic_net, 0.1, &initial_state);
 
