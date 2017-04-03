@@ -145,7 +145,35 @@ fn rk4_manual(bench: &mut test::Bencher) {
 }
 
 #[bench]
-fn chaotic_net(bench: &mut test::Bencher) {
+fn chaotic_net_derivative(bench: &mut test::Bencher) {
+    let size = 8192;
+    let mean = 0.0;
+    let nonlinearity = 1.5;
+    let std_dev = 1.1;
+
+    let dist = Normal::new(mean, std_dev / f64::sqrt(size as f64));
+    let mut coupling = Array2::random([size,size], dist);
+    coupling.diag_mut().map_inplace(|c| { *c = 0.0; });
+
+    let temp_tanh = Array1::zeros(size);
+
+    let mut chaotic_net = ChaoticNeuralNet {
+        coupling: coupling,
+        nonlinearity: nonlinearity,
+        size: size,
+        temp_tanh: temp_tanh,
+    };
+
+    let between = Range::new(-1.0, 1.0);
+
+    let state = Array1::random(size, between);
+    let derivative = Array1::zeros(size);
+    let mut derivative = black_box(derivative);
+    bench.iter(|| { chaotic_net.differentiate_into(&state, &mut derivative)});
+}
+
+#[bench]
+fn chaotic_net_rk4(bench: &mut test::Bencher) {
     let size = 8192;
     let mean = 0.0;
     let nonlinearity = 1.5;
@@ -168,10 +196,9 @@ fn chaotic_net(bench: &mut test::Bencher) {
 
     let mut initial_state = Array1::random(size, between);
 
-    let mut rk4 = RungeKutta4::new(chaotic_net, 0.1, &initial_state);
-
+    let rk4 = RungeKutta4::new(chaotic_net, 0.1, &initial_state);
+    let mut rk4 = black_box(rk4);
     bench.iter(|| { rk4.do_step(&mut initial_state); });
-    let _x = black_box(rk4);
 }
 
 #[bench]
