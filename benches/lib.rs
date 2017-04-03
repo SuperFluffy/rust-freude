@@ -17,7 +17,18 @@ use std::f64;
 use freude::{ODE,RungeKutta4,Stepper};
 use test::black_box;
 
-#[derive(Clone)]
+struct NullOde {
+    temp_derivative: Array1<f64>,
+}
+
+impl ODE for NullOde {
+    type State = Array1<f64>;
+
+    fn differentiate_into(&mut self, _: &Array1<f64>, derivative: &mut Array1<f64>) {
+        derivative.assign(&self.temp_derivative);
+    }
+}
+
 struct ChaoticNeuralNet {
     coupling: Array2<f64>,
     num_lyapunov_vectors: usize,
@@ -173,4 +184,18 @@ fn chaotic_net(bench: &mut test::Bencher) {
 
     bench.iter(|| { rk4.do_step(&mut initial_state); });
     let _x = black_box(rk4);
+}
+
+#[bench]
+fn rk4_speed(bench: &mut test::Bencher) {
+    let size = 8192;
+
+    let mut state = Array1::zeros(size);
+    let system = NullOde {
+        temp_derivative: state.clone(),
+    };
+
+    let rk4 = RungeKutta4::new(system, 0.1, &state);
+    let mut rk4 = black_box(rk4);
+    bench.iter(|| {rk4.do_step(&mut state); });
 }
