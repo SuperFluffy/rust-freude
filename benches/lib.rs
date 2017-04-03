@@ -20,15 +20,23 @@ use std::f64;
 use freude::{ODE,RungeKutta4,Stepper};
 use test::black_box;
 
-struct NullOde {
-    temp_derivative: Array1<f64>,
+struct NullOde<T> {
+    temp_derivative: T
 }
 
-impl ODE for NullOde {
+impl ODE for NullOde<Array1<f64>> {
     type State = Array1<f64>;
 
     fn differentiate_into(&mut self, _: &Array1<f64>, derivative: &mut Array1<f64>) {
         derivative.assign(&self.temp_derivative);
+    }
+}
+
+impl ODE for NullOde<Vec<f64>> {
+    type State = Vec<f64>;
+
+    fn differentiate_into(&mut self, _: &Vec<f64>, derivative: &mut Vec<f64>) {
+        derivative.clone_from(&self.temp_derivative);
     }
 }
 
@@ -235,10 +243,24 @@ fn kuramoto_vec(bench: &mut test::Bencher) {
 }
 
 #[bench]
-fn rk4_speed(bench: &mut test::Bencher) {
+fn rk4_array_speed(bench: &mut test::Bencher) {
     let size = 8192;
 
     let mut state = Array1::zeros(size);
+    let system = NullOde {
+        temp_derivative: state.clone(),
+    };
+
+    let rk4 = RungeKutta4::new(system, 0.1, &state);
+    let mut rk4 = black_box(rk4);
+    bench.iter(|| {rk4.do_step(&mut state); });
+}
+
+#[bench]
+fn rk4_vec_speed(bench: &mut test::Bencher) {
+    let size = 8192;
+
+    let mut state = vec![0.0; size];
     let system = NullOde {
         temp_derivative: state.clone(),
     };
