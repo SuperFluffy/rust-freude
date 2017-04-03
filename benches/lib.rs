@@ -20,7 +20,6 @@ use std::f64;
 use freude::{ODE,RungeKutta4,Stepper};
 use test::black_box;
 
-#[derive(Clone)]
 struct Kuramoto {
     frequencies: Vec<f64>,
     size: usize,
@@ -54,7 +53,6 @@ impl ODE for Kuramoto {
     }
 }
 
-#[derive(Clone)]
 struct ChaoticNeuralNet {
     coupling: Array2<f64>,
     nonlinearity: f64,
