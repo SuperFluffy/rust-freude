@@ -76,12 +76,8 @@ impl<S> Stepper for Heun<S,f64>
     }
 }
 
-impl<S> Stepper for Heun<S, Vec<f64>>
-    where S: ODE<State=Vec<f64>> + 'static
-{
-    type System = S;
-    type State = Vec<f64>;
-
+macro_rules! functions_for_zippable {
+    () => {
     fn do_step(&mut self, state: &mut Self::State) {
         let dt = self.dt;
         let dt_2 = self.dt_2;
@@ -110,6 +106,15 @@ impl<S> Stepper for Heun<S, Vec<f64>>
     fn timestep(&self) -> f64 {
         self.timestep()
     }
+};}
+
+impl<S> Stepper for Heun<S, Vec<f64>>
+    where S: ODE<State=Vec<f64>> + 'static
+{
+    type System = S;
+    type State = Vec<f64>;
+
+    functions_for_zippable!();
 }
 
 impl<S,T,D> Stepper for Heun<T, ArrayBase<S, D>>
@@ -120,35 +125,5 @@ impl<S,T,D> Stepper for Heun<T, ArrayBase<S, D>>
     type System = T;
     type State = ArrayBase<S,D>;
 
-    fn do_step(&mut self, state: &mut Self::State) {
-        self.system.differentiate_into(state, &mut self.k1);
-
-        // Need to assign the values here, because closures try to immutably borrow the entire
-        // self, which fails because self.temp is borrowed mutably.
-        let dt = self.dt;
-        let dt_2 = self.dt_2;
-
-        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1) in {
-            *t = s + dt * k1
-        });
-        self.system.differentiate_into(&self.temp, &mut self.k2);
-
-        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1), k2 (&self.k2) in {
-            *t = s + dt_2 * ( k1 + k2 )
-        });
-
-        self.system.update_state(state, &self.temp);
-    }
-
-    fn system_ref(&self) -> &Self::System {
-        self.system_ref()
-    }
-
-    fn system_mut(&mut self) -> &mut Self::System {
-        self.system_mut()
-    }
-
-    fn timestep(&self) -> f64 {
-        self.timestep()
-    }
+    functions_for_zippable!();
 }
