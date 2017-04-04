@@ -1,7 +1,7 @@
 use ndarray::Dimension;
 use ndarray::IntoNdProducer;
 
-use traits::ODE;
+use super::ODE;
 
 use super::{
     Stepper,
