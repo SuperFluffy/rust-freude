@@ -4,16 +4,10 @@ use ndarray::IntoNdProducer;
 use super::ODE;
 
 use super::{
+    Euler,
     Stepper,
     ZipMarker,
 };
-
-pub struct Euler<S, T> {
-    dt: f64,
-    system: S,
-
-    temp: T,
-}
 
 impl<S,T> Euler<S,T>
     where S: ODE<State=T>,
