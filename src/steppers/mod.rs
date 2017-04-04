@@ -7,13 +7,10 @@ use ndarray::{
 
 use traits::ODE;
 
-mod euler;
-mod heun;
-mod runge_kutta_4;
+mod impl_euler;
+mod impl_heun;
+mod impl_runge_kutta_4;
 
-pub use self::euler::*;
-pub use self::heun::*;
-pub use self::runge_kutta_4::*;
 
 /// A trait defining the interface of an integration method.
 pub trait Stepper
@@ -34,3 +31,36 @@ pub trait ZipMarker {}
 
 impl<T> ZipMarker for Vec<T> {}
 impl<D: Dimension, S: Data> ZipMarker for ArrayBase<S,D> {}
+
+pub struct Euler<S, T> {
+    dt: f64,
+    system: S,
+
+    temp: T,
+}
+
+pub struct Heun<S, T> {
+    dt: f64,
+    dt_2: f64,
+
+    system: S,
+
+    temp: T,
+    k1: T,
+    k2: T,
+}
+
+pub struct RungeKutta4<S, T> {
+    dt: f64,
+    dt_2: f64,
+    dt_3: f64,
+    dt_6: f64,
+
+    system: S,
+    temp: T,
+
+    k1: T,
+    k2: T,
+    k3: T,
+    k4: T,
+}
