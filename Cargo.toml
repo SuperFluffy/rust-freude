@@ -19,6 +19,11 @@ name = "freude"
 [dependencies.ndarray]
 version = "0.9"
 
+[dependencies.tuple]
+# version = "0.1"
+git = "https://github.com/s3bk/tuple"
+optional = true
+
 [dev-dependencies]
 approx = "0.1"
 blas = "0.15"

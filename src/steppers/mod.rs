@@ -11,6 +11,8 @@ mod impl_euler;
 mod impl_heun;
 mod impl_runge_kutta_4;
 
+#[cfg(feature = "tuple")]
+mod impl_tuples;
 
 /// A trait defining the interface of an integration method.
 pub trait Stepper
