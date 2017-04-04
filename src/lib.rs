@@ -3,7 +3,7 @@ extern crate ndarray;
 
 mod integrators;
 mod steppers;
-mod traits;
+mod ode;
 
 pub mod observers;
 
