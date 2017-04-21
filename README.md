@@ -11,6 +11,10 @@ Pretty much everything. :-)
 
 ## Recent changes
 
++ 0.3
+    + Update to `ndarray 0.9`
+    + Unify `Vec` and `ArrayBase` stepper states through `ndarray`'s `Zip` and `IntoNdProducer` traits
+    + Provide several examples as benchmarks (Kuramoto and Chaotic Neural Network models)
 + 0.2.0
     + Complete rework of the ODE, stepper, and integrator logic;
     + System state is no longer considered an internal property of an ODE, but a
