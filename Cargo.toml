@@ -15,10 +15,12 @@ categories = ["science"]
 name = "freude"
 
 [dependencies]
-ndarray = "0.8.1"
+
+[dependencies.ndarray]
+version = "0.9"
 
 [dev-dependencies]
 approx = "0.1"
 blas = "0.15"
-ndarray-rand = "0.4"
+ndarray-rand = "0.5"
 rand = "0.3"
