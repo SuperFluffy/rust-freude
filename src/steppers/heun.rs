@@ -1,8 +1,12 @@
-use ndarray::{ArrayBase,DataMut,DataClone,Dimension};
+use ndarray::Dimension;
+use ndarray::IntoNdProducer;
 
 use traits::ODE;
 
-use super::Stepper;
+use super::{
+    Stepper,
+    ZipMarker,
+};
 
 pub struct Heun<S, T> {
     dt: f64,
@@ -50,10 +54,10 @@ impl<S,T> Heun<S,T>
     }
 }
 
-impl<S> Stepper for Heun<S,f64>
-    where S: ODE<State=f64> + 'static
+impl<Sy> Stepper for Heun<Sy,f64>
+    where Sy: ODE<State=f64> + 'static
 {
-    type System = S;
+    type System = Sy;
     type State = f64;
 
     fn do_step(&mut self, state: &mut Self::State) {
@@ -76,8 +80,16 @@ impl<S> Stepper for Heun<S,f64>
     }
 }
 
-macro_rules! functions_for_zippable {
-    () => {
+impl<D, S, P: ZipMarker> Stepper for Heun<S, P>
+    where S: ODE<State=P> + 'static,
+          P: Clone,
+          D: Dimension,
+          for<'a> &'a P: IntoNdProducer<Dim=D, Item=&'a f64>,
+          for<'a> &'a mut P: IntoNdProducer<Dim=D, Item=&'a mut f64>,
+{
+    type System = S;
+    type State = P;
+
     fn do_step(&mut self, state: &mut Self::State) {
         let dt = self.dt;
         let dt_2 = self.dt_2;
@@ -106,24 +118,4 @@ macro_rules! functions_for_zippable {
     fn timestep(&self) -> f64 {
         self.timestep()
     }
-};}
-
-impl<S> Stepper for Heun<S, Vec<f64>>
-    where S: ODE<State=Vec<f64>> + 'static
-{
-    type System = S;
-    type State = Vec<f64>;
-
-    functions_for_zippable!();
-}
-
-impl<S,T,D> Stepper for Heun<T, ArrayBase<S, D>>
-    where D: Dimension,
-          S: DataMut<Elem=f64> + DataClone,
-          T: ODE<State=ArrayBase<S, D>> + 'static,
-{
-    type System = T;
-    type State = ArrayBase<S,D>;
-
-    functions_for_zippable!();
 }

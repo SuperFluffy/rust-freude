@@ -1,8 +1,12 @@
-use ndarray::{ArrayBase,DataMut,DataClone,Dimension};
+use ndarray::Dimension;
+use ndarray::IntoNdProducer;
 
 use traits::ODE;
 
-use super::Stepper;
+use super::{
+    Stepper,
+    ZipMarker,
+};
 
 pub struct RungeKutta4<S, T> {
     dt: f64,
@@ -62,10 +66,10 @@ impl<S,T> RungeKutta4<S,T>
     }
 }
 
-impl<S> Stepper for RungeKutta4<S,f64>
-    where S: ODE<State=f64> + 'static
+impl<Sy> Stepper for RungeKutta4<Sy,f64>
+    where Sy: ODE<State=f64> + 'static,
 {
-    type System = S;
+    type System = Sy;
     type State = f64;
 
     fn do_step(&mut self, state: &mut Self::State) {
@@ -91,8 +95,16 @@ impl<S> Stepper for RungeKutta4<S,f64>
     }
 }
 
-macro_rules! functions_for_zippable {
-    () => {
+impl<D, S, P: ZipMarker> Stepper for RungeKutta4<S, P>
+    where S: ODE<State=P> + 'static,
+          P: Clone,
+          D: Dimension,
+          for<'a> &'a P: IntoNdProducer<Dim=D, Item=&'a f64>,
+          for<'a> &'a mut P: IntoNdProducer<Dim=D, Item=&'a mut f64>,
+{
+    type System = S;
+    type State = P;
+
     fn do_step(&mut self, state: &mut Self::State) {
         let dt = self.dt;
         let dt_2 = self.dt_2;
@@ -133,24 +145,4 @@ macro_rules! functions_for_zippable {
     fn timestep(&self) -> f64 {
         self.timestep()
     }
-};}
-
-impl<S> Stepper for RungeKutta4<S, Vec<f64>>
-    where S: ODE<State=Vec<f64>> + 'static
-{
-    type System = S;
-    type State = Vec<f64>;
-
-    functions_for_zippable!();
-}
-
-impl<S,T,D> Stepper for RungeKutta4<T, ArrayBase<S, D>>
-    where D: Dimension,
-          S: DataMut<Elem=f64> + DataClone,
-          T: ODE<State=ArrayBase<S, D>> + 'static,
-{
-    type System = T;
-    type State = ArrayBase<S,D>;
-
-    functions_for_zippable!();
 }
