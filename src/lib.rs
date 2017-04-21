@@ -1,14 +1,15 @@
 #[macro_use(azip)]
 extern crate ndarray;
 
-// Re-exports
-pub use integrators::Integrator;
-pub use observers::Observer;
-pub use traits::ODE;
-pub use steppers::*;
-
 mod integrators;
 mod steppers;
 mod traits;
 
 pub mod observers;
+
+// Re-exports
+pub use integrators::Integrator;
+pub use observers::Observer;
+pub use steppers::Stepper;
+pub use traits::ODE;
+pub use steppers::*;

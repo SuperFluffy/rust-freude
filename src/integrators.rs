@@ -1,5 +1,6 @@
-use super::ODE;
 use observers::Observer;
+use traits::ODE;
+
 use steppers::Stepper;
 
 /// An integrator that takes ownership of stepper and observer.
