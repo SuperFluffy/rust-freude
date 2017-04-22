@@ -1,3 +1,9 @@
+#[cfg(feature = "tuple")]
+mod tuple_impls;
+
+#[cfg(feature = "tuple")]
+pub use self::tuple_impls::*;
+
 pub trait ODE {
     type State: Clone;
 

@@ -19,6 +19,10 @@ name = "freude"
 [dependencies.ndarray]
 version = "0.9"
 
+[dependencies.tuple]
+version = "0.1.7"
+optional = true
+
 [dev-dependencies]
 approx = "0.1"
 blas = "0.15"

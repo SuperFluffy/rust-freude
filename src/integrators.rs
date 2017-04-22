@@ -1,5 +1,5 @@
 use observers::Observer;
-use traits::ODE;
+use ode::ODE;
 
 use steppers::Stepper;
 
