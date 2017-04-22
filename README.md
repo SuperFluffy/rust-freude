@@ -11,7 +11,10 @@ Pretty much everything. :-)
 
 ## Recent changes
 
-+ 0.3
++ 0.3.1
+    + Implement steppers to work on tuples as defined in the [tuple crate](https://crates.io/crates/tuple);
+    + Implement `ODE` trait for generic functions/closures on tuples.
++ 0.3.0
     + Update to `ndarray 0.9`
     + Unify `Vec` and `ArrayBase` stepper states through `ndarray`'s `Zip` and `IntoNdProducer` traits
     + Provide several examples as benchmarks (Kuramoto and Chaotic Neural Network models)
