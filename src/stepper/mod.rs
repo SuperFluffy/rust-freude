@@ -51,6 +51,38 @@ pub trait Stepper
         where Sy: ODE<State = Self::State> + 'static;
 
     fn timestep(&self) -> f64;
+
+    fn integrate_n_steps<Sy>(&mut self, system: &mut Sy, state: &mut Self::State, n: usize) -> f64
+        where Sy: ODE<State = Self::State> + 'static
+    {
+        let mut tacc = 0f64;;
+
+        let dt = self.timestep();
+
+        // Ensure t is not exceeded
+        for _ in 0..n {
+            self.do_step(system, state);
+            tacc += dt;
+        }
+        tacc
+    }
+
+    fn integrate_time<Sy>(&mut self, system: &mut Sy, state: &mut Self::State, t: f64) -> (f64, usize)
+        where Sy: ODE<State = Self::State> + 'static
+    {
+        let mut tacc = 0f64;;
+        let mut count = 0;
+
+        let dt = self.timestep();
+
+        // Ensure t is not exceeded
+        while (tacc + dt) <= t {
+            self.do_step(system, state);
+            tacc += dt;
+            count += 1;
+        }
+        (tacc, count)
+    }
 }
 
 /// An internal marker trait to avoid trait impl conflicts.
