@@ -13,31 +13,27 @@ mod impl_runge_kutta_4;
 #[cfg(feature="tuple")]
 mod tuple_impls;
 
-pub struct Euler<S, T> {
+pub struct Euler<T> {
     dt: f64,
-    system: S,
 
     temp: T,
 }
 
-pub struct Heun<S, T> {
+pub struct Heun<T> {
     dt: f64,
     dt_2: f64,
-
-    system: S,
 
     temp: T,
     k1: T,
     k2: T,
 }
 
-pub struct RungeKutta4<S, T> {
+pub struct RungeKutta4<T> {
     dt: f64,
     dt_2: f64,
     dt_3: f64,
     dt_6: f64,
 
-    system: S,
     temp: T,
 
     k1: T,
@@ -50,12 +46,9 @@ pub struct RungeKutta4<S, T> {
 pub trait Stepper
 {
     type State: Clone;
-    type System: ODE<State = Self::State>;
 
-    fn do_step(&mut self, &mut Self::State);
-
-    fn system_ref(&self) -> &Self::System;
-    fn system_mut(&mut self) -> &mut Self::System;
+    fn do_step<Sy>(&mut self, &mut Sy, &mut Self::State)
+        where Sy: ODE<State = Self::State> + 'static;
 
     fn timestep(&self) -> f64;
 }
