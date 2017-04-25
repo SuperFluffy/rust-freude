@@ -4,7 +4,7 @@ mod tuple_impls;
 #[cfg(feature = "tuple")]
 pub use self::tuple_impls::*;
 
-pub trait ODE {
+pub trait Ode {
     type State: Clone;
 
     fn differentiate_into(&mut self, &Self::State, &mut Self::State);

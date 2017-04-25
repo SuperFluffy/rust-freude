@@ -4,16 +4,16 @@ extern crate approx;
 extern crate freude;
 extern crate ndarray;
 
-use freude::ODE;
+use freude::Ode;
 
-// Some generic ODE with dx/dt = a * x ⇒ x(t) = c * exp(a*t)
+// Some generic Ode with dx/dt = a * x ⇒ x(t) = c * exp(a*t)
 #[derive(Clone)]
 struct SimpleODE {
     a: f64,
     c: f64,
 }
 
-impl ODE for SimpleODE {
+impl Ode for SimpleODE {
     type State = f64;
 
     fn differentiate_into(&mut self, x: &f64, into: &mut f64) {

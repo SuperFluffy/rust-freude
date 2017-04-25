@@ -1,4 +1,4 @@
-use super::ODE;
+use super::Ode;
 
 use tuple::*;
 
@@ -17,7 +17,7 @@ pub type UT12<T> = T12<T,T,T,T,T,T,T,T,T,T,T,T>;
 
 macro_rules! impl_ode_for_tuples {
     ( $tup:ty ) => {
-        impl ODE for Box<Fn($tup) -> $tup>
+        impl Ode for Box<Fn($tup) -> $tup>
         {
             type State = $tup;
 
@@ -26,7 +26,7 @@ macro_rules! impl_ode_for_tuples {
             }
         }
 
-        impl<'a> ODE for &'a Fn($tup) -> $tup
+        impl<'a> Ode for &'a Fn($tup) -> $tup
         {
             type State = $tup;
 
@@ -35,7 +35,7 @@ macro_rules! impl_ode_for_tuples {
             }
         }
 
-        impl ODE for Box<FnMut($tup) -> $tup>
+        impl Ode for Box<FnMut($tup) -> $tup>
         {
             type State = $tup;
 
@@ -44,7 +44,7 @@ macro_rules! impl_ode_for_tuples {
             }
         }
 
-        impl<'a> ODE for &'a mut FnMut($tup) -> $tup
+        impl<'a> Ode for &'a mut FnMut($tup) -> $tup
         {
             type State = $tup;
 

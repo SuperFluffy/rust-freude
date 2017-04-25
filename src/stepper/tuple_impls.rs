@@ -1,6 +1,5 @@
 use tuple::*;
 
-// use super::ODE;
 use super::Euler;
 use super::Heun;
 use super::RungeKutta4;
@@ -11,7 +10,7 @@ use ode::*;
 macro_rules! impl_stepper_for_tuples {
     ( $tuple:ty ) => {
         impl<S> Stepper for Euler<S,$tuple>
-            where S: ODE<State=$tuple> + 'static
+            where S: Ode<State=$tuple> + 'static
         {
             type System = S;
             type State = $tuple;
@@ -36,7 +35,7 @@ macro_rules! impl_stepper_for_tuples {
         }
 
         impl<S> Stepper for Heun<S,$tuple>
-            where S: ODE<State=$tuple> + 'static
+            where S: Ode<State=$tuple> + 'static
         {
             type System = S;
             type State = $tuple;
@@ -65,7 +64,7 @@ macro_rules! impl_stepper_for_tuples {
         }
 
         impl<S> Stepper for RungeKutta4<S,$tuple>
-            where S: ODE<State=$tuple> + 'static
+            where S: Ode<State=$tuple> + 'static
         {
             type System = S;
             type State = $tuple;
