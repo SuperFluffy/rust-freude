@@ -48,12 +48,12 @@ pub trait Stepper
     type State: Clone;
 
     fn do_step<Sy>(&mut self, &mut Sy, &mut Self::State)
-        where Sy: Ode<State = Self::State> + 'static;
+        where Sy: Ode<State = Self::State>;
 
     fn timestep(&self) -> f64;
 
     fn integrate_n_steps<Sy>(&mut self, system: &mut Sy, state: &mut Self::State, n: usize) -> f64
-        where Sy: Ode<State = Self::State> + 'static
+        where Sy: Ode<State = Self::State>
     {
         let mut tacc = 0f64;;
 
@@ -68,7 +68,7 @@ pub trait Stepper
     }
 
     fn integrate_time<Sy>(&mut self, system: &mut Sy, state: &mut Self::State, t: f64) -> (f64, usize)
-        where Sy: Ode<State = Self::State> + 'static
+        where Sy: Ode<State = Self::State>
     {
         let mut tacc = 0f64;;
         let mut count = 0;

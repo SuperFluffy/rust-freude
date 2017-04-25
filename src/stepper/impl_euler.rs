@@ -32,7 +32,7 @@ impl Stepper for Euler<f64>
     type State = f64;
 
     fn do_step<Sy>(&mut self, system: &mut Sy, state: &mut Self::State)
-        where Sy: Ode<State=f64> + 'static,
+        where Sy: Ode<State=f64>,
     {
         system.differentiate_into(state, &mut self.temp);
         self.temp = *state + &(self.dt * &self.temp);
@@ -53,7 +53,7 @@ impl<D, P: ZipMarker> Stepper for Euler<P>
     type State = P;
 
     fn do_step<Sy>(&mut self, system: &mut Sy, state: &mut Self::State)
-        where Sy: Ode<State=P> + 'static,
+        where Sy: Ode<State=P>,
     {
         let dt = self.dt;
         system.differentiate_into(state, &mut self.temp);

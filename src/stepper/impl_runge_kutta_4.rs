@@ -47,7 +47,7 @@ impl Stepper for RungeKutta4<f64>
     type State = f64;
 
     fn do_step<Sy>(&mut self, system: &mut Sy, state: &mut Self::State)
-        where Sy: Ode<State=f64> + 'static,
+        where Sy: Ode<State=f64>,
     {
         system.differentiate_into(state, &mut self.k1);
         system.differentiate_into(&(*state + &self.k1 * self.dt_2), &mut self.k2);
@@ -72,7 +72,7 @@ impl<D, P: ZipMarker> Stepper for RungeKutta4<P>
     type State = P;
 
     fn do_step<Sy>(&mut self, system: &mut Sy, state: &mut Self::State)
-        where Sy: Ode<State=P> + 'static,
+        where Sy: Ode<State=P>,
     {
         let dt = self.dt;
         let dt_2 = self.dt_2;
