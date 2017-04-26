@@ -29,6 +29,9 @@ blas = "0.15"
 ndarray-rand = "0.5"
 rand = "0.3"
 
+[dev-dependencies.freude_derive]
+path = "./freude_derive"
+
 [features]
 
 # This feature is used for testing
