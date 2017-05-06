@@ -28,3 +28,12 @@ approx = "0.1"
 blas = "0.15"
 ndarray-rand = "0.5"
 rand = "0.3"
+
+[features]
+
+# This feature is used for testing
+test = ["tuple"]
+
+[[example]]
+name = "lorenz"
+required-features = ["tuple"]

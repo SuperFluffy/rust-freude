@@ -3,13 +3,21 @@ sudo: required
 matrix:
   include:
     - rust: stable
+      env:
+          - FEATURES='test'
     - rust: beta
+      env:
+          - FEATURES='test'
     - rust: nightly
+      env:
+          - FEATURES='test'
 branches:
   only:
     - master
 script:
   - |
-      cargo build --verbose &&
-      cargo test --verbose &&
-      cargo test --release --verbose
+      cargo build --verbose --no-default-features &&
+      cargo test --verbose --no-default-features &&
+      cargo test --release --verbose --no-default-features &&
+      cargo build --verbose --features "$FEATURES" &&
+      cargo test --verbose --features "$FEATURES"
