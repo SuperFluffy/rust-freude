@@ -2,15 +2,30 @@
 
 The `freude` crate will provide steppers and integrators to solve ODEs
 (ordinary differential equations). It is inspired by `boost::numeric::odeint`.
-At the moment it only supports the explicit, fixed-step Euler, Heun, and 4-th
-order Runge Kutta (RK4) methods.
 
-## Todo
+## Features
 
-Pretty much everything. :-)
++ Explicit fixed-step ODE solvers:
+    + Euler
+    + Heun
+    + Classical 4-th order Runge Kutta (RK4)
+
+## Todo:
+
++ Implicit methods
++ Adaptive steppers
+    + DOPRI, RKF45
++ Symplectic solvers
++ Generalized Runge Kutta methods (maybe via Butcher tableaus?)
 
 ## Recent changes
 
++ 0.4.0
+    + Complete rework and simplification of the `Ode` and `Stepper` logic
+        + `Stepper` no longer contains an `Ode` system but acts on `Ode::State` borrows
+        + Removal of `Integrator`: absorbed into `Stepper`
+        + Removal of `Observer` trait
+    + Bump to `ndarray 0.10` 
 + 0.3.1
     + Implement steppers to work on tuples as defined in the [tuple crate](https://crates.io/crates/tuple);
     + Implement `ODE` trait for generic functions/closures on tuples.
