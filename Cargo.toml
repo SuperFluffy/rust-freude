@@ -20,7 +20,7 @@ name = "freude"
 version = "0.10"
 
 [dependencies.tuple]
-version = "0.1.7"
+version = "0.2.2"
 optional = true
 
 [dev-dependencies]
