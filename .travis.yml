@@ -3,14 +3,10 @@ sudo: required
 matrix:
   include:
     - rust: stable
-      env:
-          - FEATURES='test'
     - rust: beta
-      env:
-          - FEATURES='test'
     - rust: nightly
       env:
-          - FEATURES='test'
+          - FEATURES='nightly_test'
 branches:
   only:
     - master

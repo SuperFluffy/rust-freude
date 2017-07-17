@@ -31,8 +31,8 @@ rand = "0.3"
 
 [features]
 
-# This feature is used for testing
-test = ["tuple"]
+# This feature is used for testing the nightly only
+nightly_test = ["tuple"]
 
 [[example]]
 name = "lorenz"
