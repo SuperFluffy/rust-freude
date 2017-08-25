@@ -16,27 +16,28 @@ use ndarray_rand::RandomExt;
 use rand::distributions::IndependentSample;
 use rand::distributions::{Normal, Range};
 use std::f64;
+use std::marker::PhantomData;
 
-use freude::{ODE,RungeKutta4,Stepper};
+use freude::{Ode,RungeKutta4,Stepper};
 use test::black_box;
 
-struct NullOde<T> {
-    temp_derivative: T
+struct NullSystem<T> {
+    _phantom: PhantomData<T>,
 }
 
-impl ODE for NullOde<Array1<f64>> {
+impl Ode for NullSystem<Array1<f64>> {
     type State = Array1<f64>;
 
-    fn differentiate_into(&mut self, _: &Array1<f64>, derivative: &mut Array1<f64>) {
-        derivative.assign(&self.temp_derivative);
+    fn differentiate_into(&mut self, state: &Self::State, derivative: &mut Self::State) {
+        derivative.assign(state);
     }
 }
 
-impl ODE for NullOde<Vec<f64>> {
+impl Ode for NullSystem<Vec<f64>> {
     type State = Vec<f64>;
 
-    fn differentiate_into(&mut self, _: &Vec<f64>, derivative: &mut Vec<f64>) {
-        derivative.clone_from(&self.temp_derivative);
+    fn differentiate_into(&mut self, state: &Self::State, derivative: &mut Self::State) {
+        derivative.clone_from(state);
     }
 }
 
@@ -47,7 +48,7 @@ struct Kuramoto {
     temp_cos: Vec<f64>,
 }
 
-impl ODE for Kuramoto {
+impl Ode for Kuramoto {
     type State = Vec<f64>;
 
     fn differentiate_into(&mut self, state: &Vec<f64>, derivative: &mut Vec<f64>) {
@@ -80,7 +81,7 @@ struct ChaoticNeuralNet {
     temp_tanh: Array1<f64>,
 }
 
-impl ODE for ChaoticNeuralNet {
+impl Ode for ChaoticNeuralNet {
     type State = Array1<f64>;
 
     fn differentiate_into(&mut self, state: &Array1<f64>, derivative: &mut Array1<f64>) {
@@ -113,22 +114,21 @@ fn rk4_freude(bench: &mut test::Bencher) {
     #[derive(Clone)]
     struct SimpleODE {
         a: f64,
-        x: f64,
     }
 
-    impl ODE for SimpleODE {
+    impl Ode for SimpleODE {
         type State = f64;
 
         fn differentiate_into(&mut self, x: &f64, into: &mut f64) {
-            *into = self.a + x.sin();
+            *into = *x + x.sin();
         }
     }
 
-    let mut x_init = 1.0;
-    let sys = SimpleODE { a: 1., x: x_init };
+    let mut x = 1.0;
+    let mut sys = SimpleODE { a: 1. };
 
-    let mut rk4 = RungeKutta4::new(sys, 0.1, &x_init);
-    bench.iter(|| { rk4.do_step(&mut x_init); });
+    let mut rk4 = RungeKutta4::new(&x, 0.1);
+    bench.iter(|| { rk4.do_step(&mut sys, &mut x); });
     let _x = black_box(rk4);
 }
 
@@ -193,7 +193,7 @@ fn chaotic_net_rk4(bench: &mut test::Bencher) {
 
     let temp_tanh = Array1::zeros(size);
 
-    let chaotic_net = ChaoticNeuralNet {
+    let mut chaotic_net = ChaoticNeuralNet {
         coupling: coupling,
         nonlinearity: nonlinearity,
         size: size,
@@ -202,11 +202,11 @@ fn chaotic_net_rk4(bench: &mut test::Bencher) {
 
     let between = Range::new(-1.0, 1.0);
 
-    let mut initial_state = Array1::random(size, between);
+    let mut state = Array1::random(size, between);
 
-    let rk4 = RungeKutta4::new(chaotic_net, 0.1, &initial_state);
+    let rk4 = RungeKutta4::new(&state, 0.1);
     let mut rk4 = black_box(rk4);
-    bench.iter(|| { rk4.do_step(&mut initial_state); });
+    bench.iter(|| { rk4.do_step(&mut chaotic_net, &mut state); });
 }
 
 #[bench]
@@ -223,7 +223,7 @@ fn kuramoto_vec(bench: &mut test::Bencher) {
     let temp_sin = vec![0.0; size];
     let temp_cos = vec![0.0; size];
 
-    let kuramoto = Kuramoto {
+    let mut kuramoto = Kuramoto {
         frequencies: frequencies,
         size: size,
         temp_sin: temp_sin,
@@ -233,13 +233,13 @@ fn kuramoto_vec(bench: &mut test::Bencher) {
     let pi = ::std::f64::consts::PI;
     let between = Range::new(-pi, pi);
 
-    let mut initial_state: Vec<_> = ::std::iter::repeat(()).take(size).map(|_| {
+    let mut state: Vec<_> = ::std::iter::repeat(()).take(size).map(|_| {
         between.ind_sample(&mut rng)
     }).collect();
 
-    let rk4 = RungeKutta4::new(kuramoto, 0.1, &initial_state);
+    let rk4 = RungeKutta4::new(&state, 0.1);
     let mut rk4 = black_box(rk4);
-    bench.iter(|| { rk4.do_step(&mut initial_state); });
+    bench.iter(|| { rk4.do_step(&mut kuramoto, &mut state); });
 }
 
 #[bench]
@@ -247,13 +247,11 @@ fn rk4_array_speed(bench: &mut test::Bencher) {
     let size = 8192;
 
     let mut state = Array1::zeros(size);
-    let system = NullOde {
-        temp_derivative: state.clone(),
-    };
+    let mut system = NullSystem { _phantom: PhantomData::<Array1<f64>> };
 
-    let rk4 = RungeKutta4::new(system, 0.1, &state);
+    let rk4 = RungeKutta4::new(&state, 0.1);
     let mut rk4 = black_box(rk4);
-    bench.iter(|| {rk4.do_step(&mut state); });
+    bench.iter(|| {rk4.do_step(&mut system, &mut state); });
 }
 
 #[bench]
@@ -261,11 +259,9 @@ fn rk4_vec_speed(bench: &mut test::Bencher) {
     let size = 8192;
 
     let mut state = vec![0.0; size];
-    let system = NullOde {
-        temp_derivative: state.clone(),
-    };
+    let mut system = NullSystem { _phantom: PhantomData::<Vec<f64>> };
 
-    let rk4 = RungeKutta4::new(system, 0.1, &state);
+    let rk4 = RungeKutta4::new(&state, 0.1);
     let mut rk4 = black_box(rk4);
-    bench.iter(|| {rk4.do_step(&mut state); });
+    bench.iter(|| {rk4.do_step(&mut system, &mut state); });
 }
