@@ -20,6 +20,8 @@ The `freude` crate will provide steppers and integrators to solve ODEs
 
 ## Recent changes
 
++ 0.4.0-dev
+    + Update benchmarks to work with v0.4.0
 + 0.4.0
     + Complete rework and simplification of the `Ode` and `Stepper` logic
         + `Stepper` no longer contains an `Ode` system but acts on `Ode::State` borrows
