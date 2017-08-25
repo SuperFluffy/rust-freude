@@ -25,7 +25,7 @@ optional = true
 
 [dev-dependencies]
 approx = "0.1"
-blas = "0.15"
+blas = "0.17"
 ndarray-rand = "0.6"
 rand = "0.3"
 

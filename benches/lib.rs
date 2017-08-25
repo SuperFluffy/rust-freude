@@ -90,19 +90,21 @@ impl Ode for ChaoticNeuralNet {
         self.temp_tanh.zip_mut_with(&state, |t, x| { *t = f64::tanh(g * *x); });
 
         // Calculate ∑_j J_ij · tanh(g · x_j)
-        cblas::dgemv(cblas::Layout::RowMajor, // layout
-            cblas::Transpose::None, // transa
-            self.size as i32, // m
-            self.size as i32, // n
-            1.0, // alpha
-            self.coupling.as_slice_memory_order().unwrap(), // a
-            self.size as i32, // lda
-            self.temp_tanh.as_slice_memory_order().unwrap(), // x
-            1, // incx
-            0.0, // beta
-            derivative.as_slice_memory_order_mut().unwrap(), // y
-            1, // incy
-        );
+        unsafe {
+            cblas::dgemv(cblas::Layout::RowMajor, // layout
+                cblas::Transpose::None, // transa
+                self.size as i32, // m
+                self.size as i32, // n
+                1.0, // alpha
+                self.coupling.as_slice_memory_order().unwrap(), // a
+                self.size as i32, // lda
+                self.temp_tanh.as_slice_memory_order().unwrap(), // x
+                1, // incx
+                0.0, // beta
+                derivative.as_slice_memory_order_mut().unwrap(), // y
+                1, // incy
+            );
+        }
         let mut derivative = derivative.view_mut();
         derivative -= state;
     }
