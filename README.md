@@ -20,6 +20,8 @@ The `freude` crate will provide steppers and integrators to solve ODEs
 
 ## Recent changes
 
++ 0.5.0
+    + Require `ndarray` 0.11, bump all related dependencies
 + 0.4.0-dev
     + Update benchmarks to work with v0.4.0
 + 0.4.0
