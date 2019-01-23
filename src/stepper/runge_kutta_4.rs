@@ -1,13 +1,26 @@
 use ndarray::Dimension;
 use ndarray::IntoNdProducer;
 
-use ode::Ode;
+use crate::ode::Ode;
 
 use super::{
-    RungeKutta4,
     Stepper,
     ZipMarker,
 };
+
+pub struct RungeKutta4<T> {
+    dt: f64,
+    dt_2: f64,
+    dt_3: f64,
+    dt_6: f64,
+
+    temp: T,
+
+    k1: T,
+    k2: T,
+    k3: T,
+    k4: T,
+}
 
 impl<T> RungeKutta4<T>
     where T: Clone,

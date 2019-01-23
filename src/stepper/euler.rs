@@ -1,31 +1,29 @@
 use ndarray::Dimension;
 use ndarray::IntoNdProducer;
 
-use ode::Ode;
+use crate::ode::Ode;
 
 use super::{
-    Heun,
     Stepper,
     ZipMarker,
 };
 
-impl<T> Heun<T>
+pub struct Euler<T> {
+    dt: f64,
+
+    temp: T,
+}
+
+impl<T> Euler<T>
     where T: Clone,
 {
     pub fn new(state: &T, dt: f64) -> Self {
         let temp = state.clone();
-        let k1 = state.clone();
-        let k2 = state.clone();
 
-        let dt_2 = dt/2.0;
-
-        Heun {
+        Euler {
             dt: dt,
-            dt_2: dt_2,
 
             temp: temp,
-            k1: k1,
-            k2: k2,
         }
     }
 
@@ -34,16 +32,15 @@ impl<T> Heun<T>
     }
 }
 
-impl Stepper for Heun<f64>
+impl Stepper for Euler<f64>
 {
     type State = f64;
 
     fn do_step<Sy>(&mut self, system: &mut Sy, state: &mut Self::State)
         where Sy: Ode<State=f64>,
     {
-        system.differentiate_into(state, &mut self.k1);
-        system.differentiate_into(&(*state + &(self.dt * &self.k1)), &mut self.k2);
-        self.temp = *state + &(self.dt_2 * &self.k1) + &(self.dt_2 * &self.k2);
+        system.differentiate_into(state, &mut self.temp);
+        self.temp = *state + &(self.dt * &self.temp);
         system.update_state(state, &self.temp);
     }
 
@@ -52,7 +49,7 @@ impl Stepper for Heun<f64>
     }
 }
 
-impl<D, P: ZipMarker> Stepper for Heun<P>
+impl<D, P: ZipMarker> Stepper for Euler<P>
     where P: Clone,
           D: Dimension,
           for<'a> &'a P: IntoNdProducer<Dim=D, Item=&'a f64>,
@@ -64,18 +61,12 @@ impl<D, P: ZipMarker> Stepper for Heun<P>
         where Sy: Ode<State=P>,
     {
         let dt = self.dt;
-        let dt_2 = self.dt_2;
+        system.differentiate_into(state, &mut self.temp);
 
-        system.differentiate_into(state, &mut self.k1);
-
-        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1) in {
-            *t = s + dt * k1
+        azip!(mut t (&mut self.temp), s (&*state) in {
+            *t = s + dt * *t;
         });
-        system.differentiate_into(&self.temp, &mut self.k2);
 
-        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1), k2 (&self.k2) in {
-            *t = s + dt_2 * ( k1 + k2 )
-        });
         system.update_state(state, &self.temp);
     }
 
