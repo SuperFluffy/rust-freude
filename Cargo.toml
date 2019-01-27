@@ -18,14 +18,14 @@ name = "freude"
 [dependencies]
 
 [dependencies.ndarray]
-version = "0.11"
+version = "0.12"
 
 [dependencies.tuple]
-version = "0.3.5"
+version = "0.4"
 optional = true
 
 [dev-dependencies]
-approx = "0.1"
+approx = "0.3"
 blas = "0.17"
 ndarray-rand = "0.7"
 rand = "0.4"
