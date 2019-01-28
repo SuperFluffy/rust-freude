@@ -1,6 +1,3 @@
-#[macro_use(azip)]
-extern crate ndarray;
-
 #[cfg(feature="tuple")]
 extern crate tuple;
 
