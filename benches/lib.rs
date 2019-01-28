@@ -1,20 +1,20 @@
 #![feature(test)]
 
 extern crate blas;
-extern crate freude;
-
-#[macro_use(azip)]
-extern crate ndarray;
-extern crate ndarray_rand;
-extern crate rand;
 extern crate test;
 
 use blas::c as cblas;
+use ndarray::Zip;
 use ndarray::prelude::*;
 use ndarray_rand::RandomExt;
 
-use rand::distributions::IndependentSample;
-use rand::distributions::{Normal, Range};
+use rand::{
+    distributions::{
+        Distribution,
+        Normal,
+        Uniform,
+    }
+};
 use std::f64;
 use std::marker::PhantomData;
 
@@ -68,9 +68,13 @@ impl Ode for Kuramoto {
         sin_sum /= self.size as f64;
         cos_sum /= self.size as f64;
 
-        azip!(mut d (derivative), f (&self.frequencies), sin (&self.temp_sin), cos (&self.temp_cos) in {
-            *d = f + sin_sum * cos - cos_sum * sin
-        })
+        Zip::from(derivative)
+            .and(&self.frequencies)
+            .and(&self.temp_sin)
+            .and(&self.temp_cos)
+            .apply(|d, &f, &sin, &cos|
+                *d = f + sin_sum * cos - cos_sum * sin
+        );
     }
 }
 
@@ -162,7 +166,7 @@ fn chaotic_net_derivative(bench: &mut test::Bencher) {
     let std_dev = 1.1;
 
     let dist = Normal::new(mean, std_dev / f64::sqrt(size as f64));
-    let mut coupling = Array2::random([size,size], dist);
+    let mut coupling = Array2::<f64>::random((size,size), dist);
     coupling.diag_mut().map_inplace(|c| { *c = 0.0; });
 
     let temp_tanh = Array1::zeros(size);
@@ -174,7 +178,7 @@ fn chaotic_net_derivative(bench: &mut test::Bencher) {
         temp_tanh: temp_tanh,
     };
 
-    let between = Range::new(-1.0, 1.0);
+    let between = Uniform::new_inclusive(-1.0, 1.0);
 
     let state = Array1::random(size, between);
     let derivative = Array1::zeros(size);
@@ -190,7 +194,7 @@ fn chaotic_net_rk4(bench: &mut test::Bencher) {
     let std_dev = 1.1;
 
     let dist = Normal::new(mean, std_dev / f64::sqrt(size as f64));
-    let mut coupling = Array2::random([size,size], dist);
+    let mut coupling = Array2::random((size,size), dist);
     coupling.diag_mut().map_inplace(|c| { *c = 0.0; });
 
     let temp_tanh = Array1::zeros(size);
@@ -202,7 +206,7 @@ fn chaotic_net_rk4(bench: &mut test::Bencher) {
         temp_tanh: temp_tanh,
     };
 
-    let between = Range::new(-1.0, 1.0);
+    let between = Uniform::new_inclusive(-1.0, 1.0);
 
     let mut state = Array1::random(size, between);
 
@@ -217,10 +221,10 @@ fn kuramoto_vec(bench: &mut test::Bencher) {
 
     let mut rng = ::rand::thread_rng();
 
-    let dist = Normal::new(0.0, 1.0);
-    let frequencies: Vec<_> = ::std::iter::repeat(()).take(size).map(|_| {
-        dist.ind_sample(&mut rng)
-    }).collect();
+    let frequencies: Vec<_> = Normal::new(0.0, 1.0)
+        .sample_iter(&mut rng)
+        .take(size)
+        .collect();
 
     let temp_sin = vec![0.0; size];
     let temp_cos = vec![0.0; size];
@@ -232,12 +236,12 @@ fn kuramoto_vec(bench: &mut test::Bencher) {
         temp_cos: temp_cos,
     };
 
-    let pi = ::std::f64::consts::PI;
-    let between = Range::new(-pi, pi);
+    use std::f64::consts::PI;
 
-    let mut state: Vec<_> = ::std::iter::repeat(()).take(size).map(|_| {
-        between.ind_sample(&mut rng)
-    }).collect();
+    let mut state: Vec<_> = Uniform::new_inclusive(-PI, PI)
+        .sample_iter(&mut rng)
+        .take(size)
+        .collect();
 
     let rk4 = RungeKutta4::new(&state, 0.1);
     let mut rk4 = black_box(rk4);
