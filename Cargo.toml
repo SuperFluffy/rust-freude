@@ -1,13 +1,13 @@
 [package]
 name = "freude"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2018"
 authors = ["Superfluffy"]
 license = "MIT/Apache-2.0"
 
 repository = "https://github.com/SuperFluffy/rust-freude"
 
-description = "Something that is supposed to develop into a fully fledged ODE library."
+description = "An ODE library for ndarray providing some simple, fixed-step integrators"
 
 keywords = ["ODE", "numerics", "ndarray", "rungekutta", "euler"]
 categories = ["science"]
