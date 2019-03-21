@@ -1,9 +1,8 @@
 #![feature(test)]
 
-extern crate blas;
+extern crate blas_src;
 extern crate test;
 
-use blas::c as cblas;
 use ndarray::Zip;
 use ndarray::prelude::*;
 use ndarray_rand::RandomExt;
@@ -18,7 +17,12 @@ use rand::{
 use std::f64;
 use std::marker::PhantomData;
 
-use freude::{Ode,RungeKutta4,Stepper};
+use freude::{
+    Ode,
+    RungeKutta4,
+    Stepper
+};
+
 use test::black_box;
 
 struct NullSystem<T> {

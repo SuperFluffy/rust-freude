@@ -16,19 +16,18 @@ categories = ["science"]
 name = "freude"
 
 [dependencies]
-
-[dependencies.ndarray]
-version = "0.12"
+ndarray = "0.12.1"
 
 [dependencies.tuple]
-version = "0.4"
+version = "0.4.2"
 optional = true
 
 [dev-dependencies]
-approx = "0.3"
-blas = "0.17"
-ndarray-rand = "0.9"
-rand = "0.6"
+approx = "0.3.2"
+blas-src = { version = "0.2.1", features = ["openblas"] }
+cblas = "0.2.0"
+ndarray-rand = "0.9.0"
+rand = "0.6.5"
 
 [features]
 
