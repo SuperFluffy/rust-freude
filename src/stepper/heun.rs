@@ -1,13 +1,24 @@
-use ndarray::Dimension;
-use ndarray::IntoNdProducer;
+use ndarray::{
+    Dimension,
+    IntoNdProducer,
+    Zip,
+};
 
-use ode::Ode;
+use crate::ode::Ode;
 
 use super::{
-    Heun,
     Stepper,
     ZipMarker,
 };
+
+pub struct Heun<T> {
+    dt: f64,
+    dt_2: f64,
+
+    temp: T,
+    k1: T,
+    k2: T,
+}
 
 impl<T> Heun<T>
     where T: Clone,
@@ -68,14 +79,23 @@ impl<D, P: ZipMarker> Stepper for Heun<P>
 
         system.differentiate_into(state, &mut self.k1);
 
-        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1) in {
-            *t = s + dt * k1
-        });
+        Zip::from(&mut self.temp)
+            .and(&*state)
+            .and(&self.k1)
+            .apply(|next_x, &x, &x_k1|
+                *next_x = x + dt * x_k1
+        );
+
         system.differentiate_into(&self.temp, &mut self.k2);
 
-        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1), k2 (&self.k2) in {
-            *t = s + dt_2 * ( k1 + k2 )
-        });
+        Zip::from(&mut self.temp)
+            .and(&*state)
+            .and(&self.k1)
+            .and(&self.k2)
+            .apply(|next_x, &x, &x_k1, &x_k2|
+                *next_x = x + dt_2 * (x_k1 + x_k2)
+        );
+
         system.update_state(state, &self.temp);
     }
 

@@ -1,13 +1,21 @@
-use ndarray::Dimension;
-use ndarray::IntoNdProducer;
+use ndarray::{
+    Dimension,
+    IntoNdProducer,
+    Zip,
+};
 
-use ode::Ode;
+use crate::ode::Ode;
 
 use super::{
-    Euler,
     Stepper,
     ZipMarker,
 };
+
+pub struct Euler<T> {
+    dt: f64,
+
+    temp: T,
+}
 
 impl<T> Euler<T>
     where T: Clone,
@@ -58,9 +66,11 @@ impl<D, P: ZipMarker> Stepper for Euler<P>
         let dt = self.dt;
         system.differentiate_into(state, &mut self.temp);
 
-        azip!(mut t (&mut self.temp), s (&*state) in {
-            *t = s + dt * *t;
-        });
+        Zip::from(&mut self.temp)
+            .and(&*state)
+            .apply(|next_x, &x|
+                *next_x = x + dt * *next_x
+        );
 
         system.update_state(state, &self.temp);
     }

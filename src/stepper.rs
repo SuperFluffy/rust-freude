@@ -4,50 +4,25 @@ use ndarray::{
     Dimension
 };
 
-use ode::Ode;
+use crate::ode::Ode;
 
-mod impl_euler;
-mod impl_heun;
-mod impl_runge_kutta_4;
+mod euler;
+mod heun;
+mod runge_kutta_4;
+
+pub use euler::Euler;
+pub use heun::Heun;
+pub use runge_kutta_4::RungeKutta4;
 
 #[cfg(feature="tuple")]
 mod tuple_impls;
-
-pub struct Euler<T> {
-    dt: f64,
-
-    temp: T,
-}
-
-pub struct Heun<T> {
-    dt: f64,
-    dt_2: f64,
-
-    temp: T,
-    k1: T,
-    k2: T,
-}
-
-pub struct RungeKutta4<T> {
-    dt: f64,
-    dt_2: f64,
-    dt_3: f64,
-    dt_6: f64,
-
-    temp: T,
-
-    k1: T,
-    k2: T,
-    k3: T,
-    k4: T,
-}
 
 /// A trait defining the interface of an integration method.
 pub trait Stepper
 {
     type State: Clone;
 
-    fn do_step<Sy>(&mut self, &mut Sy, &mut Self::State)
+    fn do_step<Sy>(&mut self, system: &mut Sy, state: &mut Self::State)
         where Sy: Ode<State = Self::State>;
 
     fn timestep(&self) -> f64;

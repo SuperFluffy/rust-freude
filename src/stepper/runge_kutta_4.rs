@@ -1,13 +1,29 @@
-use ndarray::Dimension;
-use ndarray::IntoNdProducer;
+use ndarray::{
+    Dimension,
+    IntoNdProducer,
+    Zip,
+};
 
-use ode::Ode;
+use crate::ode::Ode;
 
 use super::{
-    RungeKutta4,
     Stepper,
     ZipMarker,
 };
+
+pub struct RungeKutta4<T> {
+    dt: f64,
+    dt_2: f64,
+    dt_3: f64,
+    dt_6: f64,
+
+    temp: T,
+
+    k1: T,
+    k2: T,
+    k3: T,
+    k4: T,
+}
 
 impl<T> RungeKutta4<T>
     where T: Clone,
@@ -81,24 +97,43 @@ impl<D, P: ZipMarker> Stepper for RungeKutta4<P>
 
         system.differentiate_into(state, &mut self.k1);
 
-        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1) in {
-            *t = s + dt_2 * k1
-        });
+        Zip::from(&mut self.temp)
+            .and(&*state)
+            .and(&self.k1)
+            .apply(|next_x, &x, &x_k1|
+                *next_x = x + dt_2 * x_k1
+        );
+
         system.differentiate_into(&self.temp, &mut self.k2);
 
-        azip!(mut t (&mut self.temp), s (&*state), k2 (&self.k2) in {
-            *t = s + dt_2 * k2
-        });
+        Zip::from(&mut self.temp)
+            .and(&*state)
+            .and(&self.k2)
+            .apply(|next_x, &x, &x_k2|
+                *next_x = x + dt_2 * x_k2
+        );
+
         system.differentiate_into(&self.temp, &mut self.k3);
 
-        azip!(mut t (&mut self.temp), s (&*state), k3 (&self.k3) in {
-            *t = s + dt * k3
-        });
+        Zip::from(&mut self.temp)
+            .and(&*state)
+            .and(&self.k3)
+            .apply(|next_x, &x, &x_k3|
+                *next_x = x + dt * x_k3
+        );
+
         system.differentiate_into(&self.temp, &mut self.k4);
 
-        azip!(mut t (&mut self.temp), s (&*state), k1 (&self.k1), k2 (&self.k2), k3 (&self.k3), k4 (&self.k4) in {
-            *t = s + dt_6 * k1 + dt_3 * k2 + dt_3 * k3 + dt_6 * k4;
-        });
+        Zip::from(&mut self.temp)
+            .and(&*state)
+            .and(&self.k1)
+            .and(&self.k2)
+            .and(&self.k3)
+            .and(&self.k4)
+            .apply(|next_x, &x, &x_k1, &x_k2, &x_k3, &x_k4|
+                *next_x = x + dt_6 * x_k1 + dt_3 * x_k2 + dt_3 * x_k3 + dt_6 * x_k4
+        );
+
         system.update_state(state, &self.temp);
     }
 
