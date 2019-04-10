@@ -1,8 +1,8 @@
-#[cfg(feature="tuple")]
+#[cfg(feature = "tuple")]
 extern crate tuple;
 
-mod stepper;
 mod ode;
+mod stepper;
 
 // Re-exports
 pub use ode::Ode;
