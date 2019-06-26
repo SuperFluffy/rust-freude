@@ -1,10 +1,11 @@
 use ndarray::{Dimension, IntoNdProducer, Zip};
+use std::fmt::Debug;
 
 use crate::ode::Ode;
 
 use super::{Stepper, ZipMarker};
 
-pub struct Euler<T> {
+pub struct Euler<T: Debug> {
     pub(crate) dt: f64,
 
     pub(crate) temp: T,
@@ -12,7 +13,7 @@ pub struct Euler<T> {
 
 impl<T> Euler<T>
 where
-    T: Clone,
+    T: Clone + Debug,
 {
     pub fn new(state: &T, dt: f64) -> Self {
         let temp = state.clone();
@@ -44,7 +45,7 @@ impl Stepper for Euler<f64> {
 
 impl<D, P: ZipMarker> Stepper for Euler<P>
 where
-    P: Clone,
+    P: Clone + Debug,
     D: Dimension,
     for<'a> &'a P: IntoNdProducer<Dim = D, Item = &'a f64>,
     for<'a> &'a mut P: IntoNdProducer<Dim = D, Item = &'a mut f64>,

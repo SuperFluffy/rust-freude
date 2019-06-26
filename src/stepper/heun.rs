@@ -1,10 +1,11 @@
 use ndarray::{Dimension, IntoNdProducer, Zip};
+use std::fmt::Debug;
 
 use crate::ode::Ode;
 
 use super::{Stepper, ZipMarker};
 
-pub struct Heun<T> {
+pub struct Heun<T: Debug> {
     pub(crate) dt: f64,
     pub(crate) dt_2: f64,
 
@@ -15,7 +16,7 @@ pub struct Heun<T> {
 
 impl<T> Heun<T>
 where
-    T: Clone,
+    T: Clone + Debug,
 {
     pub fn new(state: &T, dt: f64) -> Self {
         let temp = state.clone();
@@ -59,7 +60,7 @@ impl Stepper for Heun<f64> {
 
 impl<D, P: ZipMarker> Stepper for Heun<P>
 where
-    P: Clone,
+    P: Clone + Debug,
     D: Dimension,
     for<'a> &'a P: IntoNdProducer<Dim = D, Item = &'a f64>,
     for<'a> &'a mut P: IntoNdProducer<Dim = D, Item = &'a mut f64>,
