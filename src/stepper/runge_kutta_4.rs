@@ -1,10 +1,12 @@
 use ndarray::{Dimension, IntoNdProducer, Zip};
+use std::fmt::Debug;
 
 use crate::ode::Ode;
 
 use super::{Stepper, ZipMarker};
 
-pub struct RungeKutta4<T> {
+#[derive(Debug)]
+pub struct RungeKutta4<T: Debug> {
     pub(crate) dt: f64,
     pub(crate) dt_2: f64,
     pub(crate) dt_3: f64,
@@ -20,7 +22,7 @@ pub struct RungeKutta4<T> {
 
 impl<T> RungeKutta4<T>
 where
-    T: Clone,
+    T: Clone + Debug,
 {
     pub fn new(state: &T, dt: f64) -> Self {
         let dt_2 = dt / 2.0;
@@ -78,7 +80,7 @@ impl Stepper for RungeKutta4<f64> {
 
 impl<D, P: ZipMarker> Stepper for RungeKutta4<P>
 where
-    P: Clone,
+    P: Clone + Debug,
     D: Dimension,
     for<'a> &'a P: IntoNdProducer<Dim = D, Item = &'a f64>,
     for<'a> &'a mut P: IntoNdProducer<Dim = D, Item = &'a mut f64>,
