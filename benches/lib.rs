@@ -3,25 +3,15 @@
 extern crate blas_src;
 extern crate test;
 
-use ndarray::Zip;
 use ndarray::prelude::*;
+use ndarray::Zip;
 use ndarray_rand::RandomExt;
 
-use rand::{
-    distributions::{
-        Distribution,
-        Normal,
-        Uniform,
-    }
-};
+use rand::distributions::{Distribution, Normal, Uniform};
 use std::f64;
 use std::marker::PhantomData;
 
-use freude::{
-    Ode,
-    RungeKutta4,
-    Stepper
-};
+use freude::{Ode, RungeKutta4, Stepper};
 
 use test::black_box;
 
@@ -66,8 +56,8 @@ impl Ode for Kuramoto {
             *t = f64::cos(*c);
         }
 
-        let mut sin_sum = self.temp_sin.iter().fold(0.0, |acc, s| { acc + s });
-        let mut cos_sum = self.temp_cos.iter().fold(0.0, |acc, c| { acc + c });
+        let mut sin_sum = self.temp_sin.iter().fold(0.0, |acc, s| acc + s);
+        let mut cos_sum = self.temp_cos.iter().fold(0.0, |acc, c| acc + c);
 
         sin_sum /= self.size as f64;
         cos_sum /= self.size as f64;
@@ -76,9 +66,7 @@ impl Ode for Kuramoto {
             .and(&self.frequencies)
             .and(&self.temp_sin)
             .and(&self.temp_cos)
-            .apply(|d, &f, &sin, &cos|
-                *d = f + sin_sum * cos - cos_sum * sin
-        );
+            .apply(|d, &f, &sin, &cos| *d = f + sin_sum * cos - cos_sum * sin);
     }
 }
 
@@ -95,22 +83,25 @@ impl Ode for ChaoticNeuralNet {
     fn differentiate_into(&mut self, state: &Array1<f64>, derivative: &mut Array1<f64>) {
         // dx_i/dt = x_i - ∑_j J_ij tanh(g·x_j)
         let g = self.nonlinearity;
-        self.temp_tanh.zip_mut_with(&state, |t, x| { *t = f64::tanh(g * *x); });
+        self.temp_tanh.zip_mut_with(&state, |t, x| {
+            *t = f64::tanh(g * *x);
+        });
 
         // Calculate ∑_j J_ij · tanh(g · x_j)
         unsafe {
-            cblas::dgemv(cblas::Layout::RowMajor, // layout
-                cblas::Transpose::None, // transa
-                self.size as i32, // m
-                self.size as i32, // n
-                1.0, // alpha
-                self.coupling.as_slice_memory_order().unwrap(), // a
-                self.size as i32, // lda
+            cblas::dgemv(
+                cblas::Layout::RowMajor,                         // layout
+                cblas::Transpose::None,                          // transa
+                self.size as i32,                                // m
+                self.size as i32,                                // n
+                1.0,                                             // alpha
+                self.coupling.as_slice_memory_order().unwrap(),  // a
+                self.size as i32,                                // lda
                 self.temp_tanh.as_slice_memory_order().unwrap(), // x
-                1, // incx
-                0.0, // beta
+                1,                                               // incx
+                0.0,                                             // beta
                 derivative.as_slice_memory_order_mut().unwrap(), // y
-                1, // incy
+                1,                                               // incy
             );
         }
         let mut derivative = derivative.view_mut();
@@ -138,7 +129,9 @@ fn rk4_freude(bench: &mut test::Bencher) {
     let mut sys = SimpleODE { a: 1. };
 
     let mut rk4 = RungeKutta4::new(&x, 0.1);
-    bench.iter(|| { rk4.do_step(&mut sys, &mut x); });
+    bench.iter(|| {
+        rk4.do_step(&mut sys, &mut x);
+    });
     let _x = black_box(rk4);
 }
 
@@ -150,15 +143,17 @@ fn rk4_manual(bench: &mut test::Bencher) {
 
     fn rk4(x: &mut f64, dt: f64) {
         let k1 = f(*x);
-        let k2 = f(*x + dt/2.0 * k1);
-        let k3 = f(*x + dt/2.0 * k2);
+        let k2 = f(*x + dt / 2.0 * k1);
+        let k3 = f(*x + dt / 2.0 * k2);
         let k4 = f(*x + dt * k3);
 
-        *x = *x + dt/6.0 * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
+        *x = *x + dt / 6.0 * (k1 + 2.0 * k2 + 2.0 * k3 + k4);
     }
 
     let mut x = black_box(1.0);
-    bench.iter(|| { rk4(&mut x, 0.1); });
+    bench.iter(|| {
+        rk4(&mut x, 0.1);
+    });
     let _x = black_box(x); // Don't optimize the bench away.
 }
 
@@ -170,8 +165,10 @@ fn chaotic_net_derivative(bench: &mut test::Bencher) {
     let std_dev = 1.1;
 
     let dist = Normal::new(mean, std_dev / f64::sqrt(size as f64));
-    let mut coupling = Array2::<f64>::random((size,size), dist);
-    coupling.diag_mut().map_inplace(|c| { *c = 0.0; });
+    let mut coupling = Array2::<f64>::random((size, size), dist);
+    coupling.diag_mut().map_inplace(|c| {
+        *c = 0.0;
+    });
 
     let temp_tanh = Array1::zeros(size);
 
@@ -187,7 +184,7 @@ fn chaotic_net_derivative(bench: &mut test::Bencher) {
     let state = Array1::random(size, between);
     let derivative = Array1::zeros(size);
     let mut derivative = black_box(derivative);
-    bench.iter(|| { chaotic_net.differentiate_into(&state, &mut derivative)});
+    bench.iter(|| chaotic_net.differentiate_into(&state, &mut derivative));
 }
 
 #[bench]
@@ -198,8 +195,10 @@ fn chaotic_net_rk4(bench: &mut test::Bencher) {
     let std_dev = 1.1;
 
     let dist = Normal::new(mean, std_dev / f64::sqrt(size as f64));
-    let mut coupling = Array2::random((size,size), dist);
-    coupling.diag_mut().map_inplace(|c| { *c = 0.0; });
+    let mut coupling = Array2::random((size, size), dist);
+    coupling.diag_mut().map_inplace(|c| {
+        *c = 0.0;
+    });
 
     let temp_tanh = Array1::zeros(size);
 
@@ -216,7 +215,9 @@ fn chaotic_net_rk4(bench: &mut test::Bencher) {
 
     let rk4 = RungeKutta4::new(&state, 0.1);
     let mut rk4 = black_box(rk4);
-    bench.iter(|| { rk4.do_step(&mut chaotic_net, &mut state); });
+    bench.iter(|| {
+        rk4.do_step(&mut chaotic_net, &mut state);
+    });
 }
 
 #[bench]
@@ -249,7 +250,9 @@ fn kuramoto_vec(bench: &mut test::Bencher) {
 
     let rk4 = RungeKutta4::new(&state, 0.1);
     let mut rk4 = black_box(rk4);
-    bench.iter(|| { rk4.do_step(&mut kuramoto, &mut state); });
+    bench.iter(|| {
+        rk4.do_step(&mut kuramoto, &mut state);
+    });
 }
 
 #[bench]
@@ -257,11 +260,15 @@ fn rk4_array_speed(bench: &mut test::Bencher) {
     let size = 8192;
 
     let mut state = Array1::zeros(size);
-    let mut system = NullSystem { _phantom: PhantomData::<Array1<f64>> };
+    let mut system = NullSystem {
+        _phantom: PhantomData::<Array1<f64>>,
+    };
 
     let rk4 = RungeKutta4::new(&state, 0.1);
     let mut rk4 = black_box(rk4);
-    bench.iter(|| {rk4.do_step(&mut system, &mut state); });
+    bench.iter(|| {
+        rk4.do_step(&mut system, &mut state);
+    });
 }
 
 #[bench]
@@ -269,9 +276,13 @@ fn rk4_vec_speed(bench: &mut test::Bencher) {
     let size = 8192;
 
     let mut state = vec![0.0; size];
-    let mut system = NullSystem { _phantom: PhantomData::<Vec<f64>> };
+    let mut system = NullSystem {
+        _phantom: PhantomData::<Vec<f64>>,
+    };
 
     let rk4 = RungeKutta4::new(&state, 0.1);
     let mut rk4 = black_box(rk4);
-    bench.iter(|| {rk4.do_step(&mut system, &mut state); });
+    bench.iter(|| {
+        rk4.do_step(&mut system, &mut state);
+    });
 }

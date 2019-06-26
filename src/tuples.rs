@@ -1,11 +1,53 @@
-use tuple::*;
+use crate::Ode;
+use crate::{Euler, Heun, RungeKutta4, Stepper};
 
-use super::Euler;
-use super::Heun;
-use super::RungeKutta4;
-use super::Stepper;
+use tuple::{Splat, A1, A10, A11, A12, A2, A3, A4, A5, A6, A7, A8, A9};
 
-use ode::*;
+macro_rules! impl_ode_for_tuples {
+    ( $tup:ty ) => {
+        impl Ode for Box<Fn($tup) -> $tup>
+        {
+            type State = $tup;
+
+            fn differentiate_into(&mut self, state: &Self::State, derivative: &mut Self::State) {
+                derivative.clone_from(&self(*state));
+            }
+        }
+
+        impl<'a> Ode for &'a Fn($tup) -> $tup
+        {
+            type State = $tup;
+
+            fn differentiate_into(&mut self, state: &Self::State, derivative: &mut Self::State) {
+                derivative.clone_from(&self(*state));
+            }
+        }
+
+        impl Ode for Box<FnMut($tup) -> $tup>
+        {
+            type State = $tup;
+
+            fn differentiate_into(&mut self, state: &Self::State, derivative: &mut Self::State) {
+                derivative.clone_from(&self(*state));
+            }
+        }
+
+        impl<'a> Ode for &'a mut FnMut($tup) -> $tup
+        {
+            type State = $tup;
+
+            fn differentiate_into(&mut self, state: &Self::State, derivative: &mut Self::State) {
+                derivative.clone_from(&self(*state));
+            }
+        }
+    };
+
+    ( $( $tup:ty ),+ ) => {
+        $(
+            impl_ode_for_tuples!($tup);
+        )+
+    };
+}
 
 macro_rules! impl_stepper_for_tuples {
     ( $tuple:ty ) => {
@@ -80,17 +122,32 @@ macro_rules! impl_stepper_for_tuples {
     };
 }
 
+impl_ode_for_tuples!(
+    A1<f64>,
+    A2<f64>,
+    A3<f64>,
+    A4<f64>,
+    A5<f64>,
+    A6<f64>,
+    A7<f64>,
+    A8<f64>,
+    A9<f64>,
+    A10<f64>,
+    A11<f64>,
+    A12<f64>
+);
+
 impl_stepper_for_tuples!(
-     UT1<f64>,
-     UT2<f64>,
-     UT3<f64>,
-     UT4<f64>,
-     UT5<f64>,
-     UT6<f64>,
-     UT7<f64>,
-     UT8<f64>,
-     UT9<f64>,
-    UT10<f64>,
-    UT11<f64>,
-    UT12<f64>
+    A1<f64>,
+    A2<f64>,
+    A3<f64>,
+    A4<f64>,
+    A5<f64>,
+    A6<f64>,
+    A7<f64>,
+    A8<f64>,
+    A9<f64>,
+    A10<f64>,
+    A11<f64>,
+    A12<f64>
 );

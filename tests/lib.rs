@@ -1,9 +1,3 @@
-#[macro_use]
-extern crate approx;
-
-extern crate freude;
-extern crate ndarray;
-
 use freude::Ode;
 
 // Some generic Ode with dx/dt = a * x ⇒ x(t) = c * exp(a*t)
@@ -25,8 +19,9 @@ macro_rules! mk_stepper_test {
     ($stepper:ident, $error_order:expr) => {
         #[allow(non_snake_case)]
         mod $stepper {
-            use freude::*;
+            use approx::assert_relative_eq;
 
+            use freude::*;
             use super::SimpleODE;
 
             #[test]
