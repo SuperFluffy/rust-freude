@@ -1,8 +1,4 @@
-use ndarray::{
-    ArrayBase,
-    Data,
-    Dimension
-};
+use ndarray::{ArrayBase, Data, Dimension};
 
 use crate::ode::Ode;
 
@@ -15,17 +11,18 @@ pub use heun::Heun;
 pub use runge_kutta_4::RungeKutta4;
 
 /// A trait defining the interface of an integration method.
-pub trait Stepper
-{
+pub trait Stepper {
     type State: Clone;
 
     fn do_step<Sy>(&mut self, system: &mut Sy, state: &mut Self::State)
-        where Sy: Ode<State = Self::State>;
+    where
+        Sy: Ode<State = Self::State>;
 
     fn timestep(&self) -> f64;
 
     fn integrate_n_steps<Sy>(&mut self, system: &mut Sy, state: &mut Self::State, n: usize) -> f64
-        where Sy: Ode<State = Self::State>
+    where
+        Sy: Ode<State = Self::State>,
     {
         let mut tacc = 0f64;;
 
@@ -39,8 +36,14 @@ pub trait Stepper
         tacc
     }
 
-    fn integrate_time<Sy>(&mut self, system: &mut Sy, state: &mut Self::State, t: f64) -> (f64, usize)
-        where Sy: Ode<State = Self::State>
+    fn integrate_time<Sy>(
+        &mut self,
+        system: &mut Sy,
+        state: &mut Self::State,
+        t: f64,
+    ) -> (f64, usize)
+    where
+        Sy: Ode<State = Self::State>,
     {
         let mut tacc = 0f64;;
         let mut count = 0;
@@ -61,4 +64,4 @@ pub trait Stepper
 pub trait ZipMarker {}
 
 impl<T> ZipMarker for Vec<T> {}
-impl<D: Dimension, S: Data> ZipMarker for ArrayBase<S,D> {}
+impl<D: Dimension, S: Data> ZipMarker for ArrayBase<S, D> {}
