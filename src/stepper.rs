@@ -14,9 +14,6 @@ pub use euler::Euler;
 pub use heun::Heun;
 pub use runge_kutta_4::RungeKutta4;
 
-#[cfg(feature="tuple")]
-mod tuple_impls;
-
 /// A trait defining the interface of an integration method.
 pub trait Stepper
 {
